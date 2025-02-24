@@ -55,6 +55,17 @@ export const Main = () => {
               <p className="text-2xl text-green-600">3</p>
             </div>
           </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-4">
+            <div className="p-4 bg-white shadow rounded-lg">
+              <h2 className="text-lg font-semibold">Đơn hàng chờ xử lý</h2>
+              <p className="text-2xl text-orange-600">8</p>
+            </div>
+            <div className="p-4 bg-white shadow rounded-lg">
+              <h2 className="text-lg font-semibold">Tỷ lệ thuốc hỏng</h2>
+              <p className="text-2xl text-gray-600">2%</p>
+            </div>
+          </div>
         </main>
       </div>
     </div>
