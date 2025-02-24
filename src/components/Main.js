@@ -37,6 +37,25 @@ export const Main = () => {
             </ul>
           </nav>
         </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6 bg-gray-50">
+          <h1 className="text-2xl font-bold mb-4">Tổng quan kho thuốc</h1>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 bg-white shadow rounded-lg">
+              <h2 className="text-lg font-semibold">Tổng số lượng thuốc</h2>
+              <p className="text-2xl text-blue-600">1,250</p>
+            </div>
+            <div className="p-4 bg-white shadow rounded-lg">
+              <h2 className="text-lg font-semibold">Thuốc sắp hết hạn</h2>
+              <p className="text-2xl text-red-600">15</p>
+            </div>
+            <div className="p-4 bg-white shadow rounded-lg">
+              <h2 className="text-lg font-semibold">Lô hàng chờ nhập</h2>
+              <p className="text-2xl text-green-600">3</p>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
