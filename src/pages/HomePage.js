@@ -8,7 +8,9 @@ export const HomePage = () => {
             <Header />
             {/* Main Content */}
             <h1>---Main page/</h1>
-            <Main />
+            <Main>
+                
+            </Main>
             <Footer />
         </div>
 
