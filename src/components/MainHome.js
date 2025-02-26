@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-export const Main = () => {
+export const MainHome = () => {
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex flex-1">
-        {/* Sidebar */}
+      <div className="flex flex-1 mx-16">
+        {/* Sidebar
         <aside className="w-64 bg-gray-100 p-4 shadow-md">
           <nav>
             <ul className="space-y-4">
@@ -36,7 +36,7 @@ export const Main = () => {
               </li>
             </ul>
           </nav>
-        </aside>
+        </aside> */}
 
         {/* Main Content */}
         <main className="flex-1 p-6 bg-gray-50">
