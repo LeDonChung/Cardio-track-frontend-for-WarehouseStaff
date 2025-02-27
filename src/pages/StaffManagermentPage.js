@@ -30,7 +30,7 @@ export const StaffManagermentPage = () => {
     return (
         <div className="bg-white text-gray-900">
             <Header />
-            <main className="p-8">
+            <main className="p-8 mb-64">
                 {/* Search Section */}
                 <div className="flex justify-between items-center mb-6">
                     <input
