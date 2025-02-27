@@ -146,17 +146,22 @@ const OrderDetailModal = ({ isOpen, onClose }) => {
     );
 };
 
-
 // Modal Kiểm kê chất lượng
 const QualityCheckModal = ({ isOpen, onClose }) => {
+    const [isCategorySelected, setIsCategorySelected] = useState(true); // Trạng thái cho checkbox
+    const [isMedicineSelected, setIsMedicineSelected] = useState(false); // Trạng thái cho checkbox
+
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-8 rounded-lg w-2/3 max-w-4xl">
+            <div className="bg-white p-8 rounded-lg w-2/3 max-w-4xl relative">
                 <h3 className="text-2xl font-bold mb-4">Kiểm kê chất lượng</h3>
-                
-                {/* Các thống kê hư hỏng với thanh cuộn khi có nhiều sản phẩm */}
+
+                <button className="mb-4 bg-green-500 text-white py-2 px-4 rounded-lg">
+                    In file
+                </button>
+
                 <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
                     <div className="bg-gray-100 p-4 rounded-lg">
                         <p><strong>Sản phẩm hỏng:</strong> Sản phẩm 1</p>
@@ -179,53 +184,86 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
                 <div className="mt-4">
                     <h4 className="font-semibold">Thêm đánh giá</h4>
                     
-                    {/* Phần chọn danh mục thuốc */}
-                    <div className="space-y-4 mb-4">
-                        <div>
-                            <label className="block">Danh mục thuốc</label>
-                            <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                <option value="category1">Danh mục 1</option>
-                                <option value="category2">Danh mục 2</option>
-                            </select>
+                    {/* Checkbox chọn loại đánh giá */}
+                    <div className="flex space-x-4 mb-4">
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="category"
+                                checked={isCategorySelected}
+                                onChange={() => {
+                                    setIsCategorySelected(true);
+                                    setIsMedicineSelected(false);
+                                }}
+                                className="mr-2"
+                            />
+                            <label htmlFor="category">Đánh giá theo danh mục</label>
                         </div>
-                        <div>
-                            <label className="block">Loại</label>
-                            <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                <option value="damaged">Hư hỏng</option>
-                                <option value="expired">Hết hạn</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Phần đánh giá cho từng sản phẩm */}
-                    <div className="space-y-4 mb-4">
-                        <div>
-                            <label className="block">Danh mục thuốc</label>
-                            <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                <option value="category1">Danh mục 1</option>
-                                <option value="category2">Danh mục 2</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block">Thuốc</label>
-                            <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                <option value="medicine1">Thuốc 1</option>
-                                <option value="medicine2">Thuốc 2</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block">Loại</label>
-                            <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                <option value="damaged">Hư hỏng</option>
-                                <option value="expired">Hết hạn</option>
-                            </select>
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="medicine"
+                                checked={isMedicineSelected}
+                                onChange={() => {
+                                    setIsCategorySelected(false);
+                                    setIsMedicineSelected(true);
+                                }}
+                                className="mr-2"
+                            />
+                            <label htmlFor="medicine">Đánh giá theo từng thuốc</label>
                         </div>
                     </div>
 
-                    {/* Các nút thêm đánh giá */}
+                    {/* Phần chọn danh mục thuốc (hiện khi chọn đánh giá theo danh mục) */}
+                    {isCategorySelected && (
+                        <div className="flex space-x-4 mb-4">
+                            <div className='w-1/2'>
+                                <label className="block">Danh mục thuốc</label>
+                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                                    <option value="category1">Danh mục 1</option>
+                                    <option value="category2">Danh mục 2</option>
+                                </select>
+                            </div>
+                            <div className='w-1/2'>
+                                <label className="block">Loại</label>
+                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                                    <option value="damaged">Hư hỏng</option>
+                                    <option value="expired">Hết hạn</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Phần đánh giá cho từng sản phẩm (hiện khi chọn đánh giá theo từng thuốc) */}
+                    {isMedicineSelected && (
+                        <div className="flex space-x-4 mb-4">
+                            <div className='w-1/3'>
+                                <label className="block">Danh mục thuốc</label>
+                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                                    <option value="category1">Danh mục 1</option>
+                                    <option value="category2">Danh mục 2</option>
+                                </select>
+                            </div>
+                            <div className='w-1/3'>
+                                <label className="block">Thuốc</label>
+                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                                    <option value="medicine1">Thuốc 1</option>
+                                    <option value="medicine2">Thuốc 2</option>
+                                </select>
+                            </div>
+                            <div className='w-1/3'>
+                                <label className="block">Loại</label>
+                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                                    <option value="damaged">Hư hỏng</option>
+                                    <option value="expired">Hết hạn</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Nút thêm đánh giá */}
                     <div className="flex space-x-4">
                         <button className="bg-blue-500 text-white py-2 px-4 rounded-lg">Thêm đánh giá kiểm tra</button>
-                        <button className="bg-green-500 text-white py-2 px-4 rounded-lg">Infile</button>
                     </div>
                 </div>
 
@@ -237,3 +275,5 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
         </div>
     );
 };
+
+
