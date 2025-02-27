@@ -46,7 +46,7 @@ export const MainHome = () => {
 
           {/* Các button to để navigation */}
           <div className="mt-8 grid grid-cols-2 gap-4">
-            <Link to="/supplier" className="block p-6 bg-blue-500 text-white text-center rounded-lg shadow hover:bg-blue-600">
+            <Link to="/suplier" className="block p-6 bg-blue-500 text-white text-center rounded-lg shadow hover:bg-blue-600">
               <h2 className="text-xl font-semibold">Nhà cung cấp</h2>
             </Link>
             <Link to="/staff" className="block p-6 bg-green-500 text-white text-center rounded-lg shadow hover:bg-green-600">
