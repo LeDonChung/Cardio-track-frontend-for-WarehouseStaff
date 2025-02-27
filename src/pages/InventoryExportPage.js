@@ -69,15 +69,32 @@ const customerOrders = [
 export const InventoryExportPage = () => {
     const [activeTab, setActiveTab] = useState('list');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [selectedReturnRequest, setSelectedReturnRequest] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [showReturnModal, setShowReturnModal] = useState(false);
 
-    // Hàm mở chi tiết đơn xuất
+    // Hàm mở modal chi tiết đơn xuất
     const openOrderDetails = (order) => {
         setSelectedOrder(order);
+        setShowModal(true);
     };
 
-    // Hàm đóng chi tiết đơn xuất
+    // Hàm đóng modal chi tiết đơn xuất
     const closeOrderDetails = () => {
+        setShowModal(false);
         setSelectedOrder(null);
+    };
+
+    // Hàm mở modal chi tiết trả hàng
+    const openReturnDetails = (request) => {
+        setSelectedReturnRequest(request);
+        setShowReturnModal(true);
+    };
+
+    // Hàm đóng modal chi tiết trả hàng
+    const closeReturnDetails = () => {
+        setShowReturnModal(false);
+        setSelectedReturnRequest(null);
     };
 
     // Hàm cập nhật trạng thái đơn hàng của khách hàng
@@ -182,6 +199,7 @@ export const InventoryExportPage = () => {
                                         </div>
                                         <div className="flex justify-end">
                                             <button
+                                                onClick={() => openReturnDetails(request)}
                                                 className="bg-yellow-500 text-white px-4 py-2 rounded-md"
                                             >
                                                 Xử lý
@@ -202,7 +220,6 @@ export const InventoryExportPage = () => {
                                     <tr className="bg-gray-100">
                                         <th className="px-4 py-2 text-left">Mã đơn</th>
                                         <th className="px-4 py-2 text-left">Khách hàng</th>
-                                        <th className="px-4 py-2 text-left">Trạng thái</th>
                                         <th className="px-4 py-2 text-left">Ngày đặt</th>
                                         <th className="px-4 py-2 text-left">Ngày xuất</th>
                                         <th className="px-4 py-2 text-right">Cập nhật trạng thái</th>
@@ -213,16 +230,9 @@ export const InventoryExportPage = () => {
                                         <tr key={order.id}>
                                             <td className="px-4 py-2">{order.id}</td>
                                             <td className="px-4 py-2">{order.customer}</td>
-                                            <td className="px-4 py-2">{order.status}</td>
                                             <td className="px-4 py-2">{order.orderDate}</td>
                                             <td className="px-4 py-2">{order.shippingDate || 'Chưa xuất kho'}</td>
                                             <td className="px-4 py-2 text-right">
-                                                <button
-                                                    onClick={() => updateOrderStatus(order.id, 'Đang xử lý')}
-                                                    className="bg-yellow-500 text-white px-4 py-2 rounded-md"
-                                                >
-                                                    Đang xử lý
-                                                </button>
                                                 <button
                                                     onClick={() => updateOrderStatus(order.id, 'Đã xuất kho')}
                                                     className="bg-green-500 text-white px-4 py-2 rounded-md ml-2"
@@ -238,6 +248,71 @@ export const InventoryExportPage = () => {
                     )}
                 </div>
             </main>
+
+            {/* Modal xem chi tiết đơn xuất */}
+            {showModal && selectedOrder && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md w-2/3">
+                        <h3 className="font-bold text-lg mb-4">Chi tiết đơn xuất - Mã: {selectedOrder.id}</h3>
+                        <table className="min-w-full table-auto border-collapse">
+                            <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="px-4 py-2 text-left">Tên thuốc</th>
+                                    <th className="px-4 py-2 text-left">Số lượng</th>
+                                    <th className="px-4 py-2 text-left">Giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedOrder.products.map((product, index) => (
+                                    <tr key={index}>
+                                        <td className="px-4 py-2">{product.name}</td>
+                                        <td className="px-4 py-2">{product.quantity}</td>
+                                        <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={closeOrderDetails}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal xem chi tiết trả hàng */}
+            {showReturnModal && selectedReturnRequest && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md w-2/3">
+                        <h3 className="font-bold text-lg mb-4">Chi tiết yêu cầu trả hàng - Mã: {selectedReturnRequest.id}</h3>
+                        <div className="mb-4">
+                            <strong>Sản phẩm:</strong> {selectedReturnRequest.productName}
+                        </div>
+                        <div className="mb-4">
+                            <strong>Số lượng:</strong> {selectedReturnRequest.quantity}
+                        </div>
+                        <div className="mb-4">
+                            <strong>Lý do trả hàng:</strong> {selectedReturnRequest.reason}
+                        </div>
+                        <div className="mb-4">
+                            <strong>Trạng thái:</strong> {selectedReturnRequest.status}
+                        </div>
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={closeReturnDetails}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Footer />
         </div>
     );
