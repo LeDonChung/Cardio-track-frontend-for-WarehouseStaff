@@ -14,6 +14,8 @@ import { ReportPage } from './pages/ReportPage';
 import { SuplierPage } from './pages/SuplierPage';
 import { StaffManagermentPage } from './pages/StaffManagermentPage';
 import { InventoryControlPage } from './pages/InventoryControlPage';
+import {AddStaffPage} from './pages/AddStaffPage';
+import {EditStaffPage} from './pages/EditStaffPage';
 
 function App() {
   return (
@@ -56,6 +58,12 @@ function App() {
 
         //Report page
         <Route path="/report" element={<ReportPage />} />
+
+        //AddStaff page
+        <Route path="/staff/add-staff" element={<AddStaffPage />} />
+
+        //EditStaff page
+        <Route path="/staff/edit-staff/:id" element={<EditStaffPage />} />
 
       </Routes>
     </BrowserRouter>
