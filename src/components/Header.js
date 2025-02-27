@@ -174,17 +174,9 @@ export const Header = () => {
                                 <li>
                                     <button
                                         className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
-                                        onClick={() => navigate('/medicine-status')}
-                                    >
-                                        Tình trạng thuốc
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
                                         onClick={() => navigate('/medicine-location')}
                                     >
-                                        Quản lý vị trí
+                                        Quản lý giá thuốc
                                     </button>
                                 </li>
                             </ul>
