@@ -10,7 +10,7 @@ export const SuplierPage = () => {
     return (
         <div className="bg-white text-gray-900">
             <Header />
-            <main className="p-8">
+            <main className="p-8 mb-64">
                 <div className="mb-6">
                     {/* Tab Switcher */}
                     <div className="flex space-x-6 border-b border-gray-200">
@@ -32,7 +32,15 @@ export const SuplierPage = () => {
                 {/* Tab Content */}
                 {activeTab === 'history' && (
                     <div>
-                        <h2 className="text-2xl font-bold mb-4">Lịch sử giao dịch</h2>
+                        <div className='flex'>
+                            <h2 className="text-2xl font-bold mb-4">Lịch sử giao dịch</h2>
+                            <button
+                                // onClick={() => setIsQualityCheckOpen(true)}
+                                className="bg-blue-800 text-white py-2 px-4 rounded-lg ml-auto mb-2"
+                            >
+                                Đặt mua thuốc
+                            </button>
+                        </div>
                         <div className="space-y-4">
                             {/* Item List */}
                             {[1, 2, 3].map((item, index) => (
