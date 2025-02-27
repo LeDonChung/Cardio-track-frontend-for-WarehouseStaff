@@ -95,7 +95,7 @@ export const Header = () => {
                         Quản lý kho
                     </button>
                     {isSubMenuOpen === 1 && (
-                        <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md">
+                        <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md">
                             <ul className="space-y-2 p-2">
                                 <li>
                                     <button
@@ -128,7 +128,7 @@ export const Header = () => {
                         Nhập - xuất thuốc
                     </button>
                     {isSubMenuOpen === 2 && (
-                        <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md">
+                        <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md">
                             <ul className="space-y-2 p-2">
                                 <li>
                                     <button
@@ -161,7 +161,7 @@ export const Header = () => {
                         Quản lý Thuốc và danh mục thuốc
                     </button>
                     {isSubMenuOpen === 4 && (
-                        <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md">
+                        <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md">
                             <ul className="space-y-2 p-2">
                                 <li>
                                     <button
@@ -193,7 +193,7 @@ export const Header = () => {
                         Kiểm kê
                     </button>
                     {isSubMenuOpen === 5 && (
-                        <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-md">
+                        <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md">
                             <ul className="space-y-2 p-2">
                                 <li>
                                     <button
