@@ -37,6 +37,7 @@ export const SuplierPage = () => {
                             {/* Item List */}
                             {[1, 2, 3].map((item, index) => (
                                 <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
+                                    <h4>15:00 ngày 30/4/2024</h4>
                                     <div className="flex justify-between items-center mb-2">
                                         <div>
                                             <h3 className="font-semibold">Supplier {index + 1} .......................................</h3>
@@ -68,7 +69,20 @@ export const SuplierPage = () => {
 
                 {activeTab === 'classification' && (
                     <div>
-                        <h2 className="text-2xl font-bold mb-4">Phân loại</h2>
+                        <div className="flex justify-between items-center mb-4 space-x-4">
+                            <h2 className="text-2xl font-bold mb-4 w-1/3">Phân loại</h2>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm nhà cung cấp..."
+                                className="mt-4 p-2 w-full border border-gray-300 rounded-lg w-1/3"
+                            />
+
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm danh mục..."
+                                className="mt-4 p-2 w-full border border-gray-300 rounded-lg w-1/3"
+                            />
+                        </div>
                         <div className="space-y-4">
                             {/* Classification Content */}
                             <div className="bg-gray-100 p-4 rounded-lg shadow">
@@ -78,11 +92,6 @@ export const SuplierPage = () => {
                                     <li>Danh mục 2: Nhà cung cấp C</li>
                                     <li>Danh mục 3: Nhà cung cấp D, Nhà cung cấp E</li>
                                 </ul>
-                                <input
-                                    type="text"
-                                    placeholder="Tìm kiếm nhà cung cấp..."
-                                    className="mt-4 p-2 w-full border border-gray-300 rounded-lg"
-                                />
                             </div>
                         </div>
                     </div>
@@ -115,28 +124,30 @@ const OrderDetailModal = ({ isOpen, onClose }) => {
 
                 <div className="space-y-2 mt-4">
                     <h4 className="font-semibold">Danh sách sản phẩm cung cấp</h4>
-                    <table className="w-full table-auto border-collapse">
-                        {/* Header */}
-                        <thead>
-                            <tr className="bg-gray-200">
-                                <th className="px-4 py-2 text-left">Sản phẩm</th>
-                                <th className="px-4 py-2 text-left">Danh mục</th>
-                                <th className="px-4 py-2 text-left">Số lượng</th>
-                                <th className="px-4 py-2 text-left">Đơn giá</th>
-                            </tr>
-                        </thead>
-                        {/* Body */}
-                        <tbody>
-                            {[1, 2, 3].map((product, index) => (
-                                <tr key={index} className="border-b">
-                                    <td className="px-4 py-2">Sản phẩm {index + 1}</td>
-                                    <td className="px-4 py-2">Thuốc giảm đau</td>
-                                    <td className="px-4 py-2">100</td>
-                                    <td className="px-4 py-2">500</td>
+                    <div className="overflow-x-auto max-h-64">
+                        <table className="w-full table-auto border-collapse">
+                            {/* Header */}
+                            <thead className="bg-gray-200 sticky top-0 z-10">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Sản phẩm</th>
+                                    <th className="px-4 py-2 text-left">Danh mục</th>
+                                    <th className="px-4 py-2 text-left">Số lượng</th>
+                                    <th className="px-4 py-2 text-left">Đơn giá</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            {/* Body with scroll */}
+                            <tbody className="overflow-y-auto">
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((product, index) => (
+                                    <tr key={index} className="border-b">
+                                        <td className="px-4 py-2">Sản phẩm {index + 1}</td>
+                                        <td className="px-4 py-2">Thuốc giảm đau</td>
+                                        <td className="px-4 py-2">100</td>
+                                        <td className="px-4 py-2">500</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div className="flex container mt-4">
                     <button onClick={onClose} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg ml-auto">Đóng</button>
@@ -145,6 +156,7 @@ const OrderDetailModal = ({ isOpen, onClose }) => {
         </div>
     );
 };
+
 
 // Modal Kiểm kê chất lượng
 const QualityCheckModal = ({ isOpen, onClose }) => {
@@ -183,7 +195,7 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
                 {/* Thêm đánh giá */}
                 <div className="mt-4">
                     <h4 className="font-semibold">Thêm đánh giá</h4>
-                    
+
                     {/* Checkbox chọn loại đánh giá */}
                     <div className="flex space-x-4 mb-4">
                         <div className="flex items-center">
