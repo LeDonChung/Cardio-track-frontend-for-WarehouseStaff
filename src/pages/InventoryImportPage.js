@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import showToast from "../utils/AppUtils";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
@@ -74,9 +75,44 @@ export const InventoryImportPage = () => {
     //     setFilteredOrders(result);
     // };
 
+    const dispatch = useDispatch();
+
+    // State để theo dõi trang hiện tại và số lượng item mỗi trang
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 10;
+
+    // Lấy dữ liệu từ Redux state
+    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
+    const { inventoryImportDetail = [], loading: detailLoading, error: detailError } = useSelector((state) => state.inventoryImportDetail || {});
+
+    // Gửi yêu cầu API khi trang thay đổi
+    useEffect(() => {
+        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'asc' }));
+    }, [dispatch, currentPage]);
+
+    useEffect(() => {
+        console.log('inventoryImport data:', inventoryImport);
+    }, [inventoryImport]);
+
+    useEffect(() => {
+        // Ví dụ lấy dữ liệu từ API hoặc Redux
+        console.log(inventoryImportDetail);  // Log giá trị của inventoryImportDetail
+    }, [inventoryImportDetail]);
+
+    // Hàm chuyển sang trang tiếp theo
+    const nextPage = () => {
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
+    // Hàm chuyển về trang trước đó
+    const prevPage = () => {
+        setCurrentPage(prevPage => (prevPage > 0 ? prevPage - 1 : 0));
+    };
+
     // Hàm mở modal chi tiết đơn nhập
     const openModal = (order) => {
         setSelectedOrder(order);
+        dispatch(fetchInventoryImportById(order.id)); // Fetch chi tiết đơn nhập
         setShowModal(true);
     };
 
@@ -113,39 +149,9 @@ export const InventoryImportPage = () => {
         alert(`Nhập kho thành công cho đơn mua ${order.id}`);
     };
 
-    const dispatch = useDispatch();
-
-    // State để theo dõi trang hiện tại và số lượng item mỗi trang
-    const [currentPage, setCurrentPage] = useState(0);
-    const pageSize = 10;
-
-    // Lấy dữ liệu từ Redux state
-    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
-
-    // Gửi yêu cầu API khi trang thay đổi
-    useEffect(() => {
-        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'asc' }));
-    }, [dispatch, currentPage]);
-
-    useEffect(() => {
-        console.log('inventoryImport data:', inventoryImport);
-    }, [inventoryImport]);
-
-    // Hàm chuyển sang trang tiếp theo
-    const nextPage = () => {
-        setCurrentPage(prevPage => prevPage + 1);
-    };
-
-    // Hàm chuyển về trang trước đó
-    const prevPage = () => {
-        setCurrentPage(prevPage => (prevPage > 0 ? prevPage - 1 : 0));
-    };
-
-
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
     if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có
-
-
+    if (detailError) return <div>Lỗi: {detailError.message}</div>; // Hiển thị lỗi chi tiết nếu có
 
     return (
         <div className="bg-white text-gray-900">
@@ -234,7 +240,6 @@ export const InventoryImportPage = () => {
                                 </tbody>
                             </table>
 
-                            {/* Các nút chuyển trang */}
                             {/* Các nút chuyển trang */}
                             <div className="flex justify-center space-x-4 mt-4">
                                 <button
@@ -357,27 +362,83 @@ export const InventoryImportPage = () => {
             {showModal && selectedOrder && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-md w-2/3">
-                        <h3 className="font-bold text-lg mb-4">Chi tiết đơn nhập - Mã: {selectedOrder.id}</h3>
+                        <h3 className="font-bold text-lg mb-4">Chi tiết đơn nhập - Mã đơn nhập: {selectedOrder.id}</h3>
+
+                        {/* Kiểm tra trạng thái tải chi tiết */}
+                        {detailLoading ? (
+                            <div>Đang tải chi tiết...</div>
+                        ) : inventoryImportDetail ? (
+                            <table className="min-w-full table-auto border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        <th className="px-4 py-2 text-left">Mã đơn nhập</th>
+                                        <th className="px-4 py-2 text-left">Mã thuốc</th>
+                                        <th className="px-4 py-2 text-left">Danh mục</th>
+                                        <th className="px-4 py-2 text-left">Số lượng</th>
+                                        <th className="px-4 py-2 text-left">Giá</th>
+                                        <th className="px-4 py-2 text-left">Giảm giá</th>
+                                        <th className="px-4 py-2 text-left">Hạn sử dụng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {inventoryImportDetail.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="px-4 py-2 text-center">Không có sản phẩm</td>
+                                        </tr>
+                                    ) : (
+                                        inventoryImportDetail.map((product) => (
+                                            <tr key={product.id}>
+                                                <td className="px-4 py-2">{product.inventoryImportId}</td>
+                                                <td className="px-4 py-2">{product.medicine}</td>
+                                                <td className="px-4 py-2">{product.category}</td>
+                                                <td className="px-4 py-2">{product.quantity}</td>
+                                                <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                                <td className="px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                <td className="px-4 py-2">{product.expirationDate}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div>Không có chi tiết.</div>
+                        )}
+
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={closeModal}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal xem chi tiết đơn nhập */}
+            {/* {showModal && selectedOrder && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md w-2/3">
+                        <h3 className="font-bold text-lg mb-4">Chi tiết đơn nhập - Mã đơn nhập: {selectedOrder.id}</h3>
                         <table className="min-w-full table-auto border-collapse">
                             <thead>
                                 <tr className="bg-gray-100">
-                                    <th className="px-4 py-2 text-left">Tên thuốc</th>
+                                    <th className="px-4 py-2 text-left">Id thuốc</th>
                                     <th className="px-4 py-2 text-left">Danh mục</th>
-                                    <th className="px-4 py-2 text-left">Nhà sản xuất</th>
+                                    <th className="px-4 py-2 text-left">Mã kệ</th>
                                     <th className="px-4 py-2 text-left">Số lượng</th>
-                                    <th className="px-4 py-2 text-left">Đơn vị tính</th>
                                     <th className="px-4 py-2 text-left">Giá</th>
                                     <th className="px-4 py-2 text-left">Hạn sử dụng</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {selectedOrder.products.map((product, index) => (
+                                {inventoryImportDetail.products.map((product, index) => (
                                     <tr key={index}>
-                                        <td className="px-4 py-2">{product.name}</td>
+                                        <td className="px-4 py-2">{product.medicine}</td>
                                         <td className="px-4 py-2">{product.category}</td>
-                                        <td className="px-4 py-2">{product.manufacturer}</td>
+                                        <td className="px-4 py-2">{product.shelf}</td>
                                         <td className="px-4 py-2">{product.quantity}</td>
-                                        <td className="px-4 py-2">{product.unit}</td>
                                         <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
                                         <td className="px-4 py-2">{product.expirationDate}</td>
                                     </tr>
@@ -394,9 +455,9 @@ export const InventoryImportPage = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
 
-            {/* Chi tiết kệ khi được chọn */}
+
             {/* Modal chi tiết kệ */}
             {selectedShelf && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
