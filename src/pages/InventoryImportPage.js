@@ -31,66 +31,6 @@ const purchaseOrders = [
     }
 ];
 
-// Dữ liệu giả lập đơn nhập với nhiều sản phẩm, bao gồm cả danh mục thuốc
-// const importOrders = [
-//     {
-//         id: 1,
-//         warehouse: 'Kho A',
-//         status: 'Đang chờ',
-//         date: '2025-02-01',
-//         user: 'Nguyễn Văn A',
-//         notes: 'Nhập hàng cần thiết',
-//         products: [
-//             {
-//                 name: 'Paracetamol',
-//                 quantity: 100,
-//                 unit: 'Viên',
-//                 price: 1000,
-//                 category: 'Thuốc giảm đau',
-//                 manufacturer: 'ABC Pharma',
-//                 expirationDate: '2026-05-01'
-//             },
-//             {
-//                 name: 'Ibuprofen',
-//                 quantity: 50,
-//                 unit: 'Viên',
-//                 price: 1500,
-//                 category: 'Thuốc giảm đau',
-//                 manufacturer: 'XYZ Corp',
-//                 expirationDate: '2025-12-15'
-//             }
-//         ]
-//     },
-//     {
-//         id: 2,
-//         warehouse: 'Kho B',
-//         status: 'Đã nhập',
-//         date: '2025-02-02',
-//         user: 'Trần Thị B',
-//         notes: 'Nhập hàng gấp',
-//         products: [
-//             {
-//                 name: 'Amoxicillin',
-//                 quantity: 200,
-//                 unit: 'Hộp',
-//                 price: 25000,
-//                 category: 'Kháng sinh',
-//                 manufacturer: 'MedPharm',
-//                 expirationDate: '2026-07-10'
-//             },
-//             {
-//                 name: 'Vitamin C',
-//                 quantity: 150,
-//                 unit: 'Viên',
-//                 price: 500,
-//                 category: 'Vitamin',
-//                 manufacturer: 'Wellness Co',
-//                 expirationDate: '2025-11-30'
-//             }
-//         ]
-//     }
-// ];
-
 // Dữ liệu giả lập kệ kho và sản phẩm trong kệ
 const shelves = [
     {
@@ -181,29 +121,20 @@ export const InventoryImportPage = () => {
 
     useEffect(() => {
         console.log('inventoryImport data:', inventoryImport);
-    }, [inventoryImport]); 
+    }, [inventoryImport]);
 
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
     if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có
 
-    // // Hàm tìm kiếm đơn nhập
-    // const handleSearch = (e) => {
-    //     const query = e.target.value.toLowerCase();
-    //     setSearchQuery(query);
-    //     const result = importOrders.filter(order =>
-    //         order.warehouse.toLowerCase().includes(query)
-    //     );
-    //     setFilteredOrders(result);
-    // };
 
 
     return (
         <div className="bg-white text-gray-900">
             <Header />
-            <main className='mb-128'>
+            <main className='bg-gray-50 mx-16 mb-64'>
                 {/* Tab Navigation */}
-                <div className="flex border-b mb-4 pr-16 pl-16">
+                <div className="flex border-b mb-4">
                     <button
                         className={`py-2 px-4 ${activeTab === 'list' ? 'border-b-2 border-blue-500' : ''}`}
                         onClick={() => setActiveTab('list')}
@@ -226,7 +157,7 @@ export const InventoryImportPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="p-4 pr-16 pl-16">
+                <div className="p-4">
                     {/* Tab Danh sách đơn nhập */}
                     {activeTab === 'list' && (
                         <div>
@@ -334,44 +265,6 @@ export const InventoryImportPage = () => {
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Chi tiết kệ khi được chọn */}
-                            {selectedShelf && (
-                                <div>
-                                    <h4 className="font-semibold text-lg mb-2">Chi tiết kệ: {selectedShelf.shelf_id}</h4>
-                                    <div className="mb-4">
-                                        <h5 className="font-medium text-lg mb-2">Danh sách sản phẩm</h5>
-                                        <table className="min-w-full table-auto border-collapse">
-                                            <thead>
-                                                <tr className="bg-gray-100">
-                                                    <th className="px-4 py-2 text-left">Tên thuốc</th>
-                                                    <th className="px-4 py-2 text-left">Số lượng</th>
-                                                    <th className="px-4 py-2 text-left">Giá</th>
-                                                    <th className="px-4 py-2 text-left">Ngày hết hạn</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedShelf.products.map((product, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-4 py-2">{product.name}</td>
-                                                        <td className="px-4 py-2">{product.quantity}</td>
-                                                        <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
-                                                        <td className="px-4 py-2">{product.status}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div className="flex justify-end mt-4">
-                                        <button
-                                            onClick={closeShelfDetails}
-                                            className="bg-red-500 text-white px-4 py-2 rounded-md"
-                                        >
-                                            Đóng
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     )}
 
@@ -459,6 +352,45 @@ export const InventoryImportPage = () => {
                         <div className="flex justify-end mt-4">
                             <button
                                 onClick={closeModal}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Chi tiết kệ khi được chọn */}
+            {/* Modal chi tiết kệ */}
+            {selectedShelf && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md w-2/3">
+                        <h3 className="font-bold text-lg mb-4">Chi tiết kệ - Mã: {selectedShelf.shelf_id}</h3>
+
+                        {/* Hiển thị thông tin kệ */}
+                        <table className="min-w-full table-auto border-collapse">
+                            <thead>
+                                <tr className="bg-gray-100">
+                                    <th className="px-4 py-2 text-left">Sản phẩm</th>
+                                    <th className="px-4 py-2 text-left">Số lượng</th>
+                                    <th className="px-4 py-2 text-left">Ngày nhập</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {selectedShelf.products.map(product => (
+                                    <tr key={product.name}>
+                                        <td className="px-4 py-2">{product.name}</td>
+                                        <td className="px-4 py-2">{product.quantity}</td>
+                                        <td className="px-4 py-2">{product.status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={closeShelfDetails}
                                 className="bg-red-500 text-white px-4 py-2 rounded-md"
                             >
                                 Đóng

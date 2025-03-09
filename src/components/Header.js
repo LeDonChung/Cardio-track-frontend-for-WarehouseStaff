@@ -24,7 +24,7 @@ export const Header = () => {
     };
 
     return (
-        <header className="bg-blue-600 p-6 pl-12 pr-12">
+        <header className="bg-blue-600 p-4 pl-12 pr-12">
             <div className="flex justify-between items-center">
                 <div className="flex items-center ml-0">
                     <img
