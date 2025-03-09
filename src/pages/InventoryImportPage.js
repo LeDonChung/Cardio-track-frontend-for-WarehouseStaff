@@ -1,6 +1,11 @@
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import showToast from "../utils/AppUtils";
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 // Dữ liệu giả lập các đơn mua lô thuốc
 const purchaseOrders = [
@@ -27,64 +32,64 @@ const purchaseOrders = [
 ];
 
 // Dữ liệu giả lập đơn nhập với nhiều sản phẩm, bao gồm cả danh mục thuốc
-const importOrders = [
-    {
-        id: 1,
-        warehouse: 'Kho A',
-        status: 'Đang chờ',
-        date: '2025-02-01',
-        user: 'Nguyễn Văn A',
-        notes: 'Nhập hàng cần thiết',
-        products: [
-            {
-                name: 'Paracetamol',
-                quantity: 100,
-                unit: 'Viên',
-                price: 1000,
-                category: 'Thuốc giảm đau',
-                manufacturer: 'ABC Pharma',
-                expirationDate: '2026-05-01'
-            },
-            {
-                name: 'Ibuprofen',
-                quantity: 50,
-                unit: 'Viên',
-                price: 1500,
-                category: 'Thuốc giảm đau',
-                manufacturer: 'XYZ Corp',
-                expirationDate: '2025-12-15'
-            }
-        ]
-    },
-    {
-        id: 2,
-        warehouse: 'Kho B',
-        status: 'Đã nhập',
-        date: '2025-02-02',
-        user: 'Trần Thị B',
-        notes: 'Nhập hàng gấp',
-        products: [
-            {
-                name: 'Amoxicillin',
-                quantity: 200,
-                unit: 'Hộp',
-                price: 25000,
-                category: 'Kháng sinh',
-                manufacturer: 'MedPharm',
-                expirationDate: '2026-07-10'
-            },
-            {
-                name: 'Vitamin C',
-                quantity: 150,
-                unit: 'Viên',
-                price: 500,
-                category: 'Vitamin',
-                manufacturer: 'Wellness Co',
-                expirationDate: '2025-11-30'
-            }
-        ]
-    }
-];
+// const importOrders = [
+//     {
+//         id: 1,
+//         warehouse: 'Kho A',
+//         status: 'Đang chờ',
+//         date: '2025-02-01',
+//         user: 'Nguyễn Văn A',
+//         notes: 'Nhập hàng cần thiết',
+//         products: [
+//             {
+//                 name: 'Paracetamol',
+//                 quantity: 100,
+//                 unit: 'Viên',
+//                 price: 1000,
+//                 category: 'Thuốc giảm đau',
+//                 manufacturer: 'ABC Pharma',
+//                 expirationDate: '2026-05-01'
+//             },
+//             {
+//                 name: 'Ibuprofen',
+//                 quantity: 50,
+//                 unit: 'Viên',
+//                 price: 1500,
+//                 category: 'Thuốc giảm đau',
+//                 manufacturer: 'XYZ Corp',
+//                 expirationDate: '2025-12-15'
+//             }
+//         ]
+//     },
+//     {
+//         id: 2,
+//         warehouse: 'Kho B',
+//         status: 'Đã nhập',
+//         date: '2025-02-02',
+//         user: 'Trần Thị B',
+//         notes: 'Nhập hàng gấp',
+//         products: [
+//             {
+//                 name: 'Amoxicillin',
+//                 quantity: 200,
+//                 unit: 'Hộp',
+//                 price: 25000,
+//                 category: 'Kháng sinh',
+//                 manufacturer: 'MedPharm',
+//                 expirationDate: '2026-07-10'
+//             },
+//             {
+//                 name: 'Vitamin C',
+//                 quantity: 150,
+//                 unit: 'Viên',
+//                 price: 500,
+//                 category: 'Vitamin',
+//                 manufacturer: 'Wellness Co',
+//                 expirationDate: '2025-11-30'
+//             }
+//         ]
+//     }
+// ];
 
 // Dữ liệu giả lập kệ kho và sản phẩm trong kệ
 const shelves = [
@@ -113,20 +118,20 @@ const shelves = [
 export const InventoryImportPage = () => {
     const [activeTab, setActiveTab] = useState('list');
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredOrders, setFilteredOrders] = useState(importOrders);
+    const [filteredOrders, setFilteredOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedShelf, setSelectedShelf] = useState(null);
 
     // Hàm tìm kiếm đơn nhập
-    const handleSearch = (e) => {
-        const query = e.target.value.toLowerCase();
-        setSearchQuery(query);
-        const result = importOrders.filter(order =>
-            order.warehouse.toLowerCase().includes(query)
-        );
-        setFilteredOrders(result);
-    };
+    // const handleSearch = (e) => {
+    //     const query = e.target.value.toLowerCase();
+    //     setSearchQuery(query);
+    //     const result = importOrders.filter(order =>
+    //         order.warehouse.toLowerCase().includes(query)
+    //     );
+    //     setFilteredOrders(result);
+    // };
 
     // Hàm mở modal chi tiết đơn nhập
     const openModal = (order) => {
@@ -167,12 +172,38 @@ export const InventoryImportPage = () => {
         alert(`Nhập kho thành công cho đơn mua ${order.id}`);
     };
 
+    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(fetchInventoryImports({ page: 0, size: 10, sortBy: 'importDate', sortName: 'asc' }));
+    }, [dispatch]);
+
+    useEffect(() => {
+        console.log('inventoryImport data:', inventoryImport);
+    }, [inventoryImport]); 
+
+
+    if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
+    if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có
+
+    // // Hàm tìm kiếm đơn nhập
+    // const handleSearch = (e) => {
+    //     const query = e.target.value.toLowerCase();
+    //     setSearchQuery(query);
+    //     const result = importOrders.filter(order =>
+    //         order.warehouse.toLowerCase().includes(query)
+    //     );
+    //     setFilteredOrders(result);
+    // };
+
+
     return (
         <div className="bg-white text-gray-900">
             <Header />
-            <main className='mb-64'>
+            <main className='mb-128'>
                 {/* Tab Navigation */}
-                <div className="flex border-b mb-4">
+                <div className="flex border-b mb-4 pr-16 pl-16">
                     <button
                         className={`py-2 px-4 ${activeTab === 'list' ? 'border-b-2 border-blue-500' : ''}`}
                         onClick={() => setActiveTab('list')}
@@ -195,7 +226,7 @@ export const InventoryImportPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="p-4">
+                <div className="p-4 pr-16 pl-16">
                     {/* Tab Danh sách đơn nhập */}
                     {activeTab === 'list' && (
                         <div>
@@ -203,19 +234,20 @@ export const InventoryImportPage = () => {
 
                             {/* Tìm kiếm đơn nhập */}
                             <div className="mb-4 flex items-center">
-                                <input
+                                {/* <input
                                     type="text"
                                     placeholder="Tìm kiếm theo tên kho..."
                                     value={searchQuery}
                                     onChange={handleSearch}
                                     className="p-2 border border-gray-300 rounded-md w-1/2"
-                                />
+                                /> */}
                             </div>
 
                             {/* Bảng danh sách đơn nhập */}
                             <table className="min-w-full table-auto border-collapse">
                                 <thead>
                                     <tr className="bg-gray-100">
+                                        <th className="px-4 py-2 text-left">Số thứ tự</th>
                                         <th className="px-4 py-2 text-left">Mã đơn</th>
                                         <th className="px-4 py-2 text-left">Kho</th>
                                         <th className="px-4 py-2 text-left">Tình trạng</th>
@@ -226,24 +258,31 @@ export const InventoryImportPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredOrders.map(order => (
-                                        <tr key={order.id}>
-                                            <td className="px-4 py-2">{order.id}</td>
-                                            <td className="px-4 py-2">{order.warehouse}</td>
-                                            <td className="px-4 py-2">{order.status}</td>
-                                            <td className="px-4 py-2">{order.date}</td>
-                                            <td className="px-4 py-2">{order.user}</td>
-                                            <td className="px-4 py-2">{order.notes}</td>
-                                            <td className="px-4 py-2 text-right">
-                                                <button
-                                                    onClick={() => openModal(order)}
-                                                    className="bg-blue-500 text-white px-4 py-2 rounded-md"
-                                                >
-                                                    Xem chi tiết
-                                                </button>
-                                            </td>
+                                    {inventoryImport.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-4">Không có đơn nhập nào</td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        inventoryImport.map(order => (
+                                            <tr key={order.id}>
+                                                <td className="px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
+                                                <td className="px-4 py-2">{order.id}</td>
+                                                <td className="px-4 py-2">{order.inventory}</td>
+                                                <td className="px-4 py-2">{order.status}</td>
+                                                <td className="px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
+                                                <td className="px-4 py-2">{order.recipient}</td>
+                                                <td className="px-4 py-2">{order.notes}</td>
+                                                <td className="px-4 py-2 text-right">
+                                                    <button
+                                                        onClick={() => openModal(order)}
+                                                        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                                    >
+                                                        Xem chi tiết
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
 
@@ -337,52 +376,52 @@ export const InventoryImportPage = () => {
                     )}
 
                     {/* Tab Đơn mua lô thuốc */}
-                {activeTab === 'purchare-order' && (
-                    <div>
-                        <h3 className="font-bold text-lg mb-2">Danh sách đơn mua lô thuốc</h3>
+                    {activeTab === 'purchare-order' && (
+                        <div>
+                            <h3 className="font-bold text-lg mb-2">Danh sách đơn mua lô thuốc</h3>
 
-                        {/* Hiển thị thông tin từng đơn mua */}
-                        <div className="space-y-4">
-                            {purchaseOrders.map((order) => (
-                                <div
-                                    key={order.id}
-                                    className="border p-4 rounded-md shadow-md bg-gray-50"
-                                >
-                                    <div className="flex justify-between mb-2">
-                                        <span className="font-semibold">Mã đơn: {order.id}</span>
-                                        <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
-                                    </div>
-                                    <div className="mb-2">
-                                        <strong>Nhà cung cấp:</strong> {order.supplier}
-                                    </div>
-                                    <div className="mb-2">
-                                        <strong>Tình trạng:</strong> {order.status}
-                                    </div>
-
-                                    {/* Hiển thị danh sách thuốc trong đơn mua */}
-                                    <div className="mb-4">
-                                        <strong>Danh sách thuốc:</strong>
-                                        <ul className="list-disc ml-4">
-                                            {order.medicines.map((medicine, index) => (
-                                                <li key={index}>
-                                                    {medicine.name} - {medicine.quantity} viên - {medicine.price.toLocaleString()} VND
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-
-                                    {/* Nút nhập vào kho */}
-                                    <button
-                                        onClick={() => importToWarehouse(order)}
-                                        className="bg-green-500 text-white px-4 py-2 rounded-md"
+                            {/* Hiển thị thông tin từng đơn mua */}
+                            <div className="space-y-4">
+                                {purchaseOrders.map((order) => (
+                                    <div
+                                        key={order.id}
+                                        className="border p-4 rounded-md shadow-md bg-gray-50"
                                     >
-                                        Nhập vào kho
-                                    </button>
-                                </div>
-                            ))}
+                                        <div className="flex justify-between mb-2">
+                                            <span className="font-semibold">Mã đơn: {order.id}</span>
+                                            <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
+                                        </div>
+                                        <div className="mb-2">
+                                            <strong>Nhà cung cấp:</strong> {order.supplier}
+                                        </div>
+                                        <div className="mb-2">
+                                            <strong>Tình trạng:</strong> {order.status}
+                                        </div>
+
+                                        {/* Hiển thị danh sách thuốc trong đơn mua */}
+                                        <div className="mb-4">
+                                            <strong>Danh sách thuốc:</strong>
+                                            <ul className="list-disc ml-4">
+                                                {order.medicines.map((medicine, index) => (
+                                                    <li key={index}>
+                                                        {medicine.name} - {medicine.quantity} viên - {medicine.price.toLocaleString()} VND
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+
+                                        {/* Nút nhập vào kho */}
+                                        <button
+                                            onClick={() => importToWarehouse(order)}
+                                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                        >
+                                            Nhập vào kho
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
                 </div>
             </main>
             <Footer />

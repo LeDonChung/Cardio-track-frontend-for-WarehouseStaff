@@ -24,7 +24,7 @@ export const Header = () => {
     };
 
     return (
-        <header className="bg-blue-600 p-6">
+        <header className="bg-blue-600 p-6 pl-12 pr-12">
             <div className="flex justify-between items-center">
                 <div className="flex items-center ml-0">
                     <img
@@ -139,14 +139,14 @@ export const Header = () => {
                                     </button>
                                 </li>
 
-                                <li>
+                                {/* <li>
                                     <button
                                         className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
                                         onClick={() => navigate('/export')}
                                     >
                                         Xuất kho
                                     </button>
-                                </li>
+                                </li> */}
                             </ul>
                         </div>
                     )}
