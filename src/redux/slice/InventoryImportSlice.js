@@ -16,19 +16,6 @@ export const fetchInventoryImports = createAsyncThunk(
     }
 );
 
-// //Lấy chi tiết đơn nhập hàng theo id
-// export const fetchInventoryImportById = createAsyncThunk(
-//     'inventoryImport/fetchImportById',
-//     async (id, { rejectWithValue }) => {
-//         try {
-//             const response = await axiosInstance.get(`/api/v1/inventory-import/${id}/detail`);
-//             return response.data.data;
-//         } catch (error) {
-//             return rejectWithValue(error.response.data);
-//         }
-//     }
-// );
-
 // Tạo đơn nhập hàng mới
 export const createInventoryImport = createAsyncThunk(
     'inventoryImport/createImport',
@@ -74,17 +61,6 @@ const inventoryImportSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload.data; // Xử lý lỗi khi tạo đơn nhập thất bại
             });
-            // .addCase(fetchInventoryImportById.pending, (state) => {
-            //     state.loading = true;
-            // })
-            // .addCase(fetchInventoryImportById.fulfilled, (state, action) => {
-            //     state.loading = false;
-            //     state.inventoryImport = action.payload.data; // Lưu chi tiết đơn nhập vào state
-            // })
-            // .addCase(fetchInventoryImportById.rejected, (state, action) => {
-            //     state.loading = false;
-            //     state.error = action.payload.data; // Xử lý lỗi khi lấy chi tiết đơn nhập thất bại
-            // });
     },
 });
 
