@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import showToast from "../utils/AppUtils";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
@@ -112,16 +113,33 @@ export const InventoryImportPage = () => {
         alert(`Nhập kho thành công cho đơn mua ${order.id}`);
     };
 
-    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
     const dispatch = useDispatch();
 
+    // State để theo dõi trang hiện tại và số lượng item mỗi trang
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 10;
+
+    // Lấy dữ liệu từ Redux state
+    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
+
+    // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
-        dispatch(fetchInventoryImports({ page: 0, size: 10, sortBy: 'importDate', sortName: 'asc' }));
-    }, [dispatch]);
+        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'asc' }));
+    }, [dispatch, currentPage]);
 
     useEffect(() => {
         console.log('inventoryImport data:', inventoryImport);
     }, [inventoryImport]);
+
+    // Hàm chuyển sang trang tiếp theo
+    const nextPage = () => {
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
+    // Hàm chuyển về trang trước đó
+    const prevPage = () => {
+        setCurrentPage(prevPage => (prevPage > 0 ? prevPage - 1 : 0));
+    };
 
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
@@ -142,17 +160,16 @@ export const InventoryImportPage = () => {
                         Danh sách đơn nhập
                     </button>
                     <button
-                        className={`py-2 px-4 ${activeTab === 'status' ? 'border-b-2 border-blue-500' : ''}`}
-                        onClick={() => setActiveTab('status')}
-                    >
-                        Kiểm soát nhập kho
-                    </button>
-
-                    <button
                         className={`py-2 px-4 ${activeTab === 'purchare-order' ? 'border-b-2 border-blue-500' : ''}`}
                         onClick={() => setActiveTab('purchare-order')}
                     >
                         Đơn mua lô thuốc
+                    </button>
+                    <button
+                        className={`py-2 px-4 ${activeTab === 'status' ? 'border-b-2 border-blue-500' : ''}`}
+                        onClick={() => setActiveTab('status')}
+                    >
+                        Kiểm soát nhập kho
                     </button>
                 </div>
 
@@ -216,6 +233,24 @@ export const InventoryImportPage = () => {
                                     )}
                                 </tbody>
                             </table>
+
+                            {/* Các nút chuyển trang */}
+                            {/* Các nút chuyển trang */}
+                            <div className="flex justify-center space-x-4 mt-4">
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 0}
+                                    className="bg-gray-500 text-white py-2 px-4 rounded-md disabled:opacity-50"
+                                >
+                                    <i className="fas fa-chevron-left"></i> Trước
+                                </button>
+                                <button
+                                    onClick={nextPage}
+                                    className="bg-blue-500 text-white py-2 px-4 rounded-md"
+                                >
+                                    Tiếp theo <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
 
                             {/* Chú thích */}
                             <div className="mt-4 text-sm text-gray-500">
