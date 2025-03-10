@@ -6,6 +6,7 @@ import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // 
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
 import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
+import { ChangeStatusPurchaseOrder } from '../redux/slice/PurchaseOrderSlice';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import showToast from "../utils/AppUtils";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
@@ -86,12 +87,38 @@ export const InventoryImportPage = () => {
     const handleCancelOrder = (orderId) => {
         const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn mua này?");
         if (confirmCancel) {
-            // Dispatch action or remove the order from the list
-            const updatedOrders = purchaseOrderByPendingStatus.filter(order => order.id !== orderId);
-            // Optionally, dispatch an action to update the Redux store with the updated order list
-            showToast("Đơn mua đã bị hủy.", 'success');
+            console.log("Đơn mua ID:", orderId);
+            const status = "CANCELED";
+            dispatch(ChangeStatusPurchaseOrder({ id: orderId, status }))
+                .then(() => {
+                    // Sau khi hủy thành công, tải lại danh sách đơn hàng
+                    dispatch(fetchPurchaseOrderByPendingStatus());
+                    showToast("Đơn mua đã bị hủy.", 'success');
+                })
+                .catch(() => {
+                    showToast("Đã có lỗi xảy ra khi hủy đơn.", 'error');
+                });
         }
     };
+
+    // Hàm nhập kho
+    const importToWarehouse = (order) => {
+        const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn mua này?");
+        if (confirmCancel) {
+            console.log("Đơn mua ID:", order.id);
+            const status = "CANCELED";
+            dispatch(ChangeStatusPurchaseOrder({ id: order.id, status }))
+                .then(() => {
+                    // Sau khi hủy thành công, tải lại danh sách đơn hàng
+                    dispatch(fetchPurchaseOrderByPendingStatus());
+                    showToast("Đơn mua đã bị hủy.", 'success');
+                })
+                .catch(() => {
+                    showToast("Đã có lỗi xảy ra khi hủy đơn.", 'error');
+                });
+        }
+    };
+
 
     // Hàm chuyển sang trang tiếp theo
     const nextPage = () => {
@@ -142,12 +169,6 @@ export const InventoryImportPage = () => {
         setShowPurchaseOrderModal(false);
         setSelectedOrderPurchare(null);
     };
-
-    // Hàm nhập kho
-    const importToWarehouse = (order) => {
-        alert(`Nhập kho thành công cho đơn mua ${order.id}`);
-    };
-
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
     if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có
