@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import {createInventoryImport} from '../redux/slice/InventoryImportSlice';
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
 import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
@@ -87,7 +88,6 @@ export const InventoryImportPage = () => {
     const handleCancelOrder = (orderId) => {
         const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn mua này?");
         if (confirmCancel) {
-            console.log("Đơn mua ID:", orderId);
             const status = "CANCELED";
             dispatch(ChangeStatusPurchaseOrder({ id: orderId, status }))
                 .then(() => {
@@ -100,24 +100,32 @@ export const InventoryImportPage = () => {
                 });
         }
     };
-
+    
     // Hàm nhập kho
     const importToWarehouse = (order) => {
-        const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn mua này?");
+        const confirmCancel = window.confirm("Bạn có chắc chắn muốn xác nhận đơn mua này?");
         if (confirmCancel) {
-            console.log("Đơn mua ID:", order.id);
-            const status = "CANCELED";
+            const status = "APPROVED";
+            
+            // Đổi trạng thái đơn hàng thành APPROVED
             dispatch(ChangeStatusPurchaseOrder({ id: order.id, status }))
-                .then(() => {
-                    // Sau khi hủy thành công, tải lại danh sách đơn hàng
-                    dispatch(fetchPurchaseOrderByPendingStatus());
-                    showToast("Đơn mua đã bị hủy.", 'success');
-                })
+            .then(() => {
+                // Sau khi duyệt đơn mua thành công, tạo đơn nhập kho
+                dispatch(createInventoryImport(order))
+                    .then(() => {
+                        showToast("Đơn mua đã được xác nhận để chờ nhập kho.", 'success');
+                    })
+                    .catch((error) => {
+                        console.error("Lỗi khi tạo đơn nhập kho:", error);
+                        showToast("Đã có lỗi xảy ra khi tạo đơn nhập kho.", 'error');
+                    });
+            })
                 .catch(() => {
-                    showToast("Đã có lỗi xảy ra khi hủy đơn.", 'error');
+                    showToast("Đã có lỗi xảy ra khi xác nhận đơn.", 'error');
                 });
         }
     };
+    
 
 
     // Hàm chuyển sang trang tiếp theo
