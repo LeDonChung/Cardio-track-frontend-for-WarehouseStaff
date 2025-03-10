@@ -327,10 +327,10 @@ export const InventoryImportPage = () => {
                                                 <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Nhà cung cấp:</strong> {order.supplier}
+                                                <strong>Nhà cung cấp:</strong> {order.supplierName}
                                             </div>
                                             <div className="mb-2">
-                                                <strong>Tình trạng:</strong> {order.status}
+                                                <strong>Tình trạng:</strong> Đang xử lý - {order.status}
                                             </div>
 
                                             {/* Hiển thị danh sách thuốc trong đơn mua */}
@@ -350,7 +350,7 @@ export const InventoryImportPage = () => {
                                                 onClick={() => importToWarehouse(order)}
                                                 className="bg-green-500 text-white px-4 py-2 rounded-md"
                                             >
-                                                Nhập vào kho
+                                                Xác nhận đơn mua
                                             </button>
 
                                             {/* Nút hủy đơn */}

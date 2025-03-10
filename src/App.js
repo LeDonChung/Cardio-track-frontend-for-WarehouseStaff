@@ -39,7 +39,7 @@ function App() {
         <Route path="/import" element={<InventoryImportPage />} />
 
         //InventoryExport page
-        {/* <Route path="/export" element={<InventoryExportPage />} /> */}
+        <Route path="/export" element={<InventoryExportPage />} />
 
         //MedicineLocation page
         <Route path="/medicine-location" element={<MedicineLocationPage />} />

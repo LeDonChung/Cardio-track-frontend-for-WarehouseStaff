@@ -139,14 +139,14 @@ export const Header = () => {
                                     </button>
                                 </li>
 
-                                {/* <li>
+                                <li>
                                     <button
                                         className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
                                         onClick={() => navigate('/export')}
                                     >
-                                        Xuất kho
+                                        Đề nghị mua hàng
                                     </button>
-                                </li> */}
+                                </li>
                             </ul>
                         </div>
                     )}
