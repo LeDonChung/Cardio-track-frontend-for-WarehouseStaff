@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
+import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import showToast from "../utils/AppUtils";
 import { CKEditor } from '@ckeditor/ckeditor5-react';
@@ -61,22 +62,14 @@ export const InventoryImportPage = () => {
     // Lấy dữ liệu từ Redux state
     const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
     const { inventoryImportDetail = [], loading: detailLoading, error: detailError } = useSelector((state) => state.inventoryImportDetail || {});
-    const { purchaseOrderByPendingStatus = [] ,loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { purchaseOrderDetail = [], loading: purchaseDetailLoading, error: purchaseDetailLoadingError } = useSelector((state) => state.purchaseOrderDetail || {});
 
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
         dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'asc' }));
     }, [dispatch, currentPage]);
-
-    // useEffect(() => {
-    //     console.log('inventoryImport data:', inventoryImport);
-    // }, [inventoryImport]);
-
-    // useEffect(() => {
-    //     // Ví dụ lấy dữ liệu từ API hoặc Redux
-    //     console.log(inventoryImportDetail);  // Log giá trị của inventoryImportDetail
-    // }, [inventoryImportDetail]);
 
     useEffect(() => {
         if (activeTab === 'purchare-order') {
@@ -87,7 +80,7 @@ export const InventoryImportPage = () => {
     useEffect(() => {
         console.log("purchaseOrders: ", purchaseOrderByPendingStatus);
     }, [purchaseOrderByPendingStatus]);  // Log dữ liệu sau khi đã lấy xong
-    
+
 
     // Handle cancel order with confirmation
     const handleCancelOrder = (orderId) => {
@@ -133,15 +126,20 @@ export const InventoryImportPage = () => {
         setSelectedShelf(null);
     };
 
+    // State for managing the purchase order modal
     const [selectedOrderPurchare, setSelectedOrderPurchare] = useState(null);
+    const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false);
 
     // Hàm mở chi tiết đơn mua
     const openOrderDetails = (order) => {
         setSelectedOrderPurchare(order);
+        dispatch(fetchPurchaseOrderDetailById(order.id));  // Fetch chi tiết đơn mua
+        setShowPurchaseOrderModal(true);
     };
 
     // Hàm đóng chi tiết đơn mua
     const closeOrderDetails = () => {
+        setShowPurchaseOrderModal(false);
         setSelectedOrderPurchare(null);
     };
 
@@ -333,18 +331,6 @@ export const InventoryImportPage = () => {
                                                 <strong>Tình trạng:</strong> Đang xử lý - {order.status}
                                             </div>
 
-                                            {/* Hiển thị danh sách thuốc trong đơn mua */}
-                                            {/* <div className="mb-4">
-                                                <strong>Danh sách thuốc:</strong>
-                                                <ul className="list-disc ml-4">
-                                                    {order.medicines.map((medicine, index) => (
-                                                        <li key={index}>
-                                                            {medicine.name} - {medicine.quantity} viên - {medicine.price.toLocaleString()} VND
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div> */}
-
                                             {/* Nút nhập vào kho */}
                                             <button
                                                 onClick={() => importToWarehouse(order)}
@@ -359,6 +345,14 @@ export const InventoryImportPage = () => {
                                                 className="bg-red-500 text-white px-4 py-2 rounded-md ml-2"
                                             >
                                                 Hủy đơn
+                                            </button>
+
+                                            {/* Hiển thị nút chi tiết đơn mua */}
+                                            <button
+                                                onClick={() => openOrderDetails(order)}  // Open modal with order details
+                                                className="bg-yellow-500 text-white px-4 py-2 rounded-md ml-2"
+                                            >
+                                                Xem chi tiết
                                             </button>
                                         </div>
                                     ))
@@ -420,6 +414,60 @@ export const InventoryImportPage = () => {
                         <div className="flex justify-end mt-4">
                             <button
                                 onClick={closeModal}
+                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal xem chi tiết đơn mua */}
+            {showPurchaseOrderModal && selectedOrderPurchare && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md w-2/3">
+                        <h3 className="font-bold text-lg mb-4">Chi tiết đơn mua - Mã đơn: {selectedOrderPurchare.id}</h3>
+
+                        {/* Kiểm tra trạng thái tải chi tiết đơn mua */}
+                        {purchaseDetailLoading ? (
+                            <div>Đang tải chi tiết...</div>
+                        ) : purchaseOrderDetail ? (
+                            <table className="min-w-full table-auto border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-100">
+                                        <th className="px-4 py-2 text-left">Mã thuốc</th>
+                                        <th className="px-4 py-2 text-left">Số lượng</th>
+                                        <th className="px-4 py-2 text-left">Giá</th>
+                                        <th className="px-4 py-2 text-left">Giảm giá</th>
+                                        <th className="px-4 py-2 text-left">Hạn sử dụng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {purchaseOrderDetail.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-4 py-2 text-center">Không có sản phẩm</td>
+                                        </tr>
+                                    ) : (
+                                        purchaseOrderDetail.map((product) => (
+                                            <tr key={product.id}>
+                                                <td className="px-4 py-2">{product.medicine}</td>
+                                                <td className="px-4 py-2">{product.quantity}</td>
+                                                <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                                <td className="px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                <td className="px-4 py-2">{product.expirationDate}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div>Không có chi tiết.</div>
+                        )}
+
+                        <div className="flex justify-end mt-4">
+                            <button
+                                onClick={closeOrderDetails}
                                 className="bg-red-500 text-white px-4 py-2 rounded-md"
                             >
                                 Đóng

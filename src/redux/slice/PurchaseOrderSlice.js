@@ -15,7 +15,7 @@ export const fetchPurchaseOrderByPendingStatus = createAsyncThunk(
   }
 );
 
-const inventoryImportDetailSlice = createSlice({
+const purchaseOrderSlice = createSlice({
   name: 'purchaseOrderByPendingStatus',
   initialState: {
     purchaseOrderByPendingStatus: [],  
@@ -39,4 +39,4 @@ const inventoryImportDetailSlice = createSlice({
   },
 });
 
-export default inventoryImportDetailSlice.reducer;
+export default purchaseOrderSlice.reducer;

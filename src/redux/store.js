@@ -3,6 +3,7 @@ import UserSlice from './slice/UserSlice';
 import InventoryImportSlice from './slice/InventoryImportSlice';
 import InventoryImportDetailSlice from './slice/InventoryImportDetailSlice';
 import PurchaseOrderSlice from './slice/PurchaseOrderSlice';
+import PurchaseOrderDetailSlice from './slice/PurchaseOrderDetailSlice';
 
 const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
         inventoryImport: InventoryImportSlice,
         inventoryImportDetail: InventoryImportDetailSlice,
         purchaseOrderByPendingStatus: PurchaseOrderSlice,
+        purchaseOrderDetail: PurchaseOrderDetailSlice,
     },
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware({

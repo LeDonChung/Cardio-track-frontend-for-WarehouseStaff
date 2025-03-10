@@ -30,7 +30,7 @@ const inventoryImportDetailSlice = createSlice({
       })
       .addCase(fetchInventoryImportById.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(action.payload);
+        console.log("payload of inventory import detail:", action.payload);
         state.inventoryImportDetail = action.payload; // Lưu chi tiết đơn nhập vào state
       })
       .addCase(fetchInventoryImportById.rejected, (state, action) => {
