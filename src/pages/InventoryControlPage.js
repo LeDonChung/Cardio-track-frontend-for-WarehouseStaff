@@ -81,25 +81,6 @@ export const InventoryControlPage = () => {
             <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAddNew}>Thêm mới</button>
           </div>
   
-          {isFormVisible && (
-            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                <h2 className="text-lg font-semibold mb-2">{isEditing ? "Chỉnh sửa" : "Thêm mới"} sản phẩm</h2>
-                <input type="text" placeholder="Tên" className="border p-2 w-full mb-2" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                <input type="number" placeholder="Số lượng" className="border p-2 w-full mb-2" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} />
-                <input type="text" placeholder="Vị trí" className="border p-2 w-full mb-2" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-                <input type="text" placeholder="Trạng thái" className="border p-2 w-full mb-2" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} />
-                <input type="number" placeholder="Giá" className="border p-2 w-full mb-2" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-                <input type="date" placeholder="Hạn sử dụng" className="border p-2 w-full mb-2" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} />
-                <input type="text" placeholder="Ghi chú" className="border p-2 w-full mb-2" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-                <div className="flex justify-end space-x-2">
-                  <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsFormVisible(false)}>Hủy</button>
-                  <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleSave}>{isEditing ? "Lưu" : "Thêm"}</button>
-                </div>
-              </div>
-            </div>
-          )}
-  
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-300">
               <thead className="bg-gray-100">
@@ -137,6 +118,24 @@ export const InventoryControlPage = () => {
           </div>
         </div>
         <Footer />
+        {isFormVisible && (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-lg font-semibold mb-2">{isEditing ? "Chỉnh sửa" : "Thêm mới"} sản phẩm</h2>
+                <input type="text" placeholder="Tên" className="border p-2 w-full mb-2" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                <input type="number" placeholder="Số lượng" className="border p-2 w-full mb-2" value={formData.quantity} onChange={(e) => setFormData({ ...formData, quantity: e.target.value })} />
+                <input type="text" placeholder="Vị trí" className="border p-2 w-full mb-2" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
+                <input type="text" placeholder="Trạng thái" className="border p-2 w-full mb-2" value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} />
+                <input type="number" placeholder="Giá" className="border p-2 w-full mb-2" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+                <input type="date" placeholder="Hạn sử dụng" className="border p-2 w-full mb-2" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} />
+                <input type="text" placeholder="Ghi chú" className="border p-2 w-full mb-2" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+                <div className="flex justify-end space-x-2">
+                  <button className="bg-gray-500 text-white px-4 py-2 rounded" onClick={() => setIsFormVisible(false)}>Hủy</button>
+                  <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleSave}>{isEditing ? "Lưu" : "Thêm"}</button>
+                </div>
+              </div>
+            </div>
+          )}
       </div>
     );
 }

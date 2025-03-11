@@ -70,7 +70,7 @@ export const InventoryImportPage = () => {
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
-        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'asc' }));
+        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
     }, [dispatch, currentPage]);
 
     useEffect(() => {
@@ -113,6 +113,7 @@ export const InventoryImportPage = () => {
                 // Sau khi duyệt đơn mua thành công, tạo đơn nhập kho
                 dispatch(createInventoryImport(order))
                     .then(() => {
+                        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
                         showToast("Đơn mua đã được xác nhận để chờ nhập kho.", 'success');
                     })
                     .catch((error) => {
@@ -227,17 +228,18 @@ export const InventoryImportPage = () => {
                             </div>
 
                             {/* Bảng danh sách đơn nhập */}
-                            <table className="min-w-full table-auto border-collapse">
+                            <table className="min-w-full table-auto border-collapse border border-gray-300">
                                 <thead>
                                     <tr className="bg-gray-100">
-                                        <th className="px-4 py-2 text-left">Số thứ tự</th>
-                                        <th className="px-4 py-2 text-left">Mã đơn</th>
-                                        <th className="px-4 py-2 text-left">Kho</th>
-                                        <th className="px-4 py-2 text-left">Tình trạng</th>
-                                        <th className="px-4 py-2 text-left">Ngày nhập</th>
-                                        <th className="px-4 py-2 text-left">Người phụ trách</th>
-                                        <th className="px-4 py-2 text-left">Ghi chú</th>
-                                        <th className="px-4 py-2 text-right">Hành động</th>
+                                        <th className="border px-4 py-2 text-left">Số thứ tự</th>
+                                        <th className="border px-4 py-2 text-left">Mã đơn</th>
+                                        <th className="border px-4 py-2 text-left">Nhà cung cấp</th>
+                                        <th className="border px-4 py-2 text-left">Kho</th>
+                                        <th className="border px-4 py-2 text-left">Tình trạng</th>
+                                        <th className="border px-4 py-2 text-left">Ngày nhập</th>
+                                        <th className="border px-4 py-2 text-left">Người phụ trách</th>
+                                        <th className="border px-4 py-2 text-left">Ghi chú</th>
+                                        <th className="border px-4 py-2 text-right">Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -248,17 +250,24 @@ export const InventoryImportPage = () => {
                                     ) : (
                                         inventoryImport.map(order => (
                                             <tr key={order.id}>
-                                                <td className="px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
-                                                <td className="px-4 py-2">{order.id}</td>
-                                                <td className="px-4 py-2">{order.inventory}</td>
-                                                <td className="px-4 py-2">{order.status}</td>
-                                                <td className="px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
-                                                <td className="px-4 py-2">{order.recipient}</td>
-                                                <td className="px-4 py-2">{order.notes}</td>
-                                                <td className="px-4 py-2 text-right">
+                                                <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
+                                                <td className="border px-4 py-2">{order.id}</td>
+                                                <td className="border px-4 py-2">{order.supplier}</td>
+                                                <td className="border px-4 py-2">{order.inventory}</td>
+                                                <td className="border px-4 py-2">{order.status}</td>
+                                                <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
+                                                <td className="border px-4 py-2">{order.recipient}</td>
+                                                <td className="border px-4 py-2">{order.notes}</td>
+                                                <td className="border px-4 py-2 text-right">
+                                                <button
+                                                        onClick={() => openModal(order)}
+                                                        className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                                    >
+                                                        Tiến hành nhập
+                                                    </button>
                                                     <button
                                                         onClick={() => openModal(order)}
-                                                        className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                                        className="bg-green-500 text-white px-4 py-2 rounded-md ml-4"
                                                     >
                                                         Xem chi tiết
                                                     </button>
@@ -404,16 +413,16 @@ export const InventoryImportPage = () => {
                         {detailLoading ? (
                             <div>Đang tải chi tiết...</div>
                         ) : inventoryImportDetail ? (
-                            <table className="min-w-full table-auto border-collapse">
+                            <table className="min-w-full table-auto border-collapse border border-gray-300">
                                 <thead>
                                     <tr className="bg-gray-100">
-                                        <th className="px-4 py-2 text-left">Mã đơn nhập</th>
-                                        <th className="px-4 py-2 text-left">Mã thuốc</th>
-                                        <th className="px-4 py-2 text-left">Danh mục</th>
-                                        <th className="px-4 py-2 text-left">Số lượng</th>
-                                        <th className="px-4 py-2 text-left">Giá</th>
-                                        <th className="px-4 py-2 text-left">Giảm giá</th>
-                                        <th className="px-4 py-2 text-left">Hạn sử dụng</th>
+                                        <th className="border px-4 py-2 text-left">Mã đơn nhập</th>
+                                        <th className="border px-4 py-2 text-left">Mã thuốc</th>
+                                        <th className="border px-4 py-2 text-left">Danh mục</th>
+                                        <th className="border px-4 py-2 text-left">Số lượng</th>
+                                        <th className="border px-4 py-2 text-left">Giá</th>
+                                        <th className="border px-4 py-2 text-left">Giảm giá</th>
+                                        <th className="border px-4 py-2 text-left">Hạn sử dụng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -424,13 +433,13 @@ export const InventoryImportPage = () => {
                                     ) : (
                                         inventoryImportDetail.map((product) => (
                                             <tr key={product.id}>
-                                                <td className="px-4 py-2">{product.inventoryImportId}</td>
-                                                <td className="px-4 py-2">{product.medicine}</td>
-                                                <td className="px-4 py-2">{product.category}</td>
-                                                <td className="px-4 py-2">{product.quantity}</td>
-                                                <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
-                                                <td className="px-4 py-2">{product.discount.toLocaleString()} VND</td>
-                                                <td className="px-4 py-2">{product.expirationDate}</td>
+                                                <td className="border px-4 py-2">{product.inventoryImportId}</td>
+                                                <td className="border px-4 py-2">{product.medicine}</td>
+                                                <td className="border px-4 py-2">{product.category}</td>
+                                                <td className="border px-4 py-2">{product.quantity}</td>
+                                                <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                                <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                <td className="border px-4 py-2">{product.expirationDate}</td>
                                             </tr>
                                         ))
                                     )}
@@ -462,14 +471,14 @@ export const InventoryImportPage = () => {
                         {purchaseDetailLoading ? (
                             <div>Đang tải chi tiết...</div>
                         ) : purchaseOrderDetail ? (
-                            <table className="min-w-full table-auto border-collapse">
+                            <table className="min-w-full table-auto border-collapse border border-gray-300">
                                 <thead>
                                     <tr className="bg-gray-100">
-                                        <th className="px-4 py-2 text-left">Mã thuốc</th>
-                                        <th className="px-4 py-2 text-left">Số lượng</th>
-                                        <th className="px-4 py-2 text-left">Giá</th>
-                                        <th className="px-4 py-2 text-left">Giảm giá</th>
-                                        <th className="px-4 py-2 text-left">Hạn sử dụng</th>
+                                        <th className="border px-4 py-2 text-left">Mã thuốc</th>
+                                        <th className="border px-4 py-2 text-left">Số lượng</th>
+                                        <th className="border px-4 py-2 text-left">Giá</th>
+                                        <th className="border px-4 py-2 text-left">Giảm giá</th>
+                                        <th className="border px-4 py-2 text-left">Hạn sử dụng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -480,11 +489,11 @@ export const InventoryImportPage = () => {
                                     ) : (
                                         purchaseOrderDetail.map((product) => (
                                             <tr key={product.id}>
-                                                <td className="px-4 py-2">{product.medicine}</td>
-                                                <td className="px-4 py-2">{product.quantity}</td>
-                                                <td className="px-4 py-2">{product.price.toLocaleString()} VND</td>
-                                                <td className="px-4 py-2">{product.discount.toLocaleString()} VND</td>
-                                                <td className="px-4 py-2">{product.expirationDate}</td>
+                                                <td className="border px-4 py-2">{product.medicine}</td>
+                                                <td className="border px-4 py-2">{product.quantity}</td>
+                                                <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                                <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                <td className="border px-4 py-2">{product.expirationDate}</td>
                                             </tr>
                                         ))
                                     )}
