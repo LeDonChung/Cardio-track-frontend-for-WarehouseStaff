@@ -14,6 +14,7 @@ export const InventoryControlPage = () => {
 
   useEffect(() => {
     dispatch(fetchMedicines({ searchTerm, page, size: 10, sortBy: "name", sortName: "asc" }));
+    console.log(medicines);
   }, [dispatch, searchTerm, page]);
 
   const handlePageChange = (newPage) => {
