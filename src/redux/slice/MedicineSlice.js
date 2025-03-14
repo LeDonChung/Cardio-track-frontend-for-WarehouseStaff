@@ -39,6 +39,18 @@ export const searchMedicines = createAsyncThunk(
       }
     }
   );
+  export const updateMedicine = createAsyncThunk(
+    "medicine/updateMedicine",
+    async (medicine, { rejectWithValue, dispatch }) => {
+      try {
+        await axiosInstance.put(`/api/v1/medicine`, medicine);
+        dispatch(fetchMedicines({ page: 1, size: 10, sortBy: "name", sortName: "asc" }));
+        return medicine;
+      } catch (error) {
+        return rejectWithValue(error.response?.data || "Lỗi không xác định");
+      }
+    }
+  );
 const medicineSlice = createSlice({
     name: "medicine",
     initialState: { medicines: [], totalPages: 1 },
@@ -51,6 +63,9 @@ const medicineSlice = createSlice({
       builder.addCase(deleteMedicine.fulfilled, (state, action) => {
         state.medicines = state.medicines.filter((item) => item.id !== action.payload);
       });
+        builder.addCase(updateMedicine.fulfilled, (state, action) => {
+            state.medicines = state.medicines.map((item) => (item.id === action.payload.id ? action.payload : item));
+            });
     },
   });
   
