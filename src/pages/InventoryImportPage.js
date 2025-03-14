@@ -3,7 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
-import {createInventoryImport} from '../redux/slice/InventoryImportSlice';
+import { createInventoryImport } from '../redux/slice/InventoryImportSlice';
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
 import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
@@ -100,33 +100,33 @@ export const InventoryImportPage = () => {
                 });
         }
     };
-    
+
     // Hàm nhập kho
     const importToWarehouse = (order) => {
         const confirmCancel = window.confirm("Bạn có chắc chắn muốn xác nhận đơn mua này?");
         if (confirmCancel) {
             const status = "APPROVED";
-            
+
             // Đổi trạng thái đơn hàng thành APPROVED
             dispatch(ChangeStatusPurchaseOrder({ id: order.id, status }))
-            .then(() => {
-                // Sau khi duyệt đơn mua thành công, tạo đơn nhập kho
-                dispatch(createInventoryImport(order))
-                    .then(() => {
-                        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
-                        showToast("Đơn mua đã được xác nhận để chờ nhập kho.", 'success');
-                    })
-                    .catch((error) => {
-                        console.error("Lỗi khi tạo đơn nhập kho:", error);
-                        showToast("Đã có lỗi xảy ra khi tạo đơn nhập kho.", 'error');
-                    });
-            })
+                .then(() => {
+                    // Sau khi duyệt đơn mua thành công, tạo đơn nhập kho
+                    dispatch(createInventoryImport(order))
+                        .then(() => {
+                            dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+                            showToast("Đơn mua đã được xác nhận để chờ nhập kho.", 'success');
+                        })
+                        .catch((error) => {
+                            console.error("Lỗi khi tạo đơn nhập kho:", error);
+                            showToast("Đã có lỗi xảy ra khi tạo đơn nhập kho.", 'error');
+                        });
+                })
                 .catch(() => {
                     showToast("Đã có lỗi xảy ra khi xác nhận đơn.", 'error');
                 });
         }
     };
-    
+
 
 
     // Hàm chuyển sang trang tiếp theo
@@ -259,12 +259,14 @@ export const InventoryImportPage = () => {
                                                 <td className="border px-4 py-2">{order.recipient}</td>
                                                 <td className="border px-4 py-2">{order.notes}</td>
                                                 <td className="border px-4 py-2 text-right">
-                                                <button
-                                                        onClick={() => openModal(order)}
-                                                        className="bg-red-500 text-white px-4 py-2 rounded-md"
-                                                    >
-                                                        Tiến hành nhập
-                                                    </button>
+                                                    {order.status === "PENDING" && (
+                                                        <button
+                                                            onClick={() => openModal(order)}
+                                                            className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                                        >
+                                                            Tiến hành nhập
+                                                        </button>
+                                                    )}
                                                     <button
                                                         onClick={() => openModal(order)}
                                                         className="bg-green-500 text-white px-4 py-2 rounded-md ml-4"
