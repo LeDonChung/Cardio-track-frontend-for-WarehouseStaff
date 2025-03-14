@@ -1,8 +1,8 @@
 import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMedicines, deleteMedicine } from "../redux/slice/MedicineSlice";
+import MedicineModal from "../components/MedicineModal";
 
 export const InventoryControlPage = () => {
   const dispatch = useDispatch();
@@ -10,10 +10,10 @@ export const InventoryControlPage = () => {
   const { medicines = [], totalPages = 1 } = medicineState;
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
 
   useEffect(() => {
     dispatch(fetchMedicines({ searchTerm, page, size: 10, sortBy: "name", sortName: "asc" }));
-    
   }, [dispatch, searchTerm, page]);
 
   const handlePageChange = (newPage) => {
@@ -24,6 +24,10 @@ export const InventoryControlPage = () => {
 
   const handleDelete = (id) => {
     dispatch(deleteMedicine(id));
+  };
+
+  const handleRowClick = (medicine) => {
+    setSelectedMedicine(medicine);
   };
 
   return (
@@ -55,7 +59,8 @@ export const InventoryControlPage = () => {
             </thead>
             <tbody>
               {medicines.map((item) => (
-                <tr key={item.id} className="text-center">
+                <tr key={item.id} className="text-center cursor-pointer hover:bg-gray-200"
+                    onClick={() => handleRowClick(item)}>
                   <td className="border p-2">{item.id}</td>
                   <td className="border p-2">{item.name}</td>
                   <td className="border p-2">{item.price.toFixed(2)}</td>
@@ -63,7 +68,10 @@ export const InventoryControlPage = () => {
                   <td className="border p-2">
                     <button 
                       className="bg-red-500 text-white px-2 py-1 rounded"
-                      onClick={() => handleDelete(item.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
                     >
                       Xóa
                     </button>
@@ -73,6 +81,7 @@ export const InventoryControlPage = () => {
             </tbody>
           </table>
         </div>
+
         <div className="flex justify-center mt-4">
           <button
             className={`px-4 py-2 bg-gray-300 rounded mx-2 ${
@@ -99,6 +108,13 @@ export const InventoryControlPage = () => {
           </button>
         </div>
       </div>
+
+      {selectedMedicine && (
+        <MedicineModal 
+          medicine={selectedMedicine} 
+          onClose={() => setSelectedMedicine(null)} 
+        />
+      )}
     </div>
   );
 };
