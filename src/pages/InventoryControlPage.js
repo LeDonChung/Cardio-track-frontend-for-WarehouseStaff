@@ -1,79 +1,29 @@
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import React, { useState, useEffect } from "react";
-
-const API_URL = "http://localhost:8888/api/v1/medicine";
-const SEARCH_API_URL = "http://localhost:8888/api/v1/medicine/search";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMedicines, deleteMedicine } from "../redux/slice/MedicineSlice";
 
 export const InventoryControlPage = () => {
-  const [inventoryData, setInventoryData] = useState([]);
+  const dispatch = useDispatch();
+  const medicineState = useSelector((state) => state.medicine) || {};
+  const { medicines = [], totalPages = 1 } = medicineState;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
-  const [searchPrice, setSearchPrice] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    quantity: "",
-    location: "",
-    status: "",
-    price: "",
-    expiration_date: "",
-    notes: "",
-  });
-  
-  const fetchInventory = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}?page=${page}&size=10&sortBy=name&sortName=asc`
-      );
-      const data = await response.json();
-      setInventoryData(data.data.data || []);
-      setTotalPages(data.data.totalPage || 1);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-      setInventoryData([]);
-    }
-  };
-
-  const fetchSearchResults = async () => {
-    try {
-      const response = await fetch(
-        `${SEARCH_API_URL}?key=${searchTerm}&page=${page}&size=10&sortBy=price&sortName=desc`
-      );
-      const data = await response.json();
-      setInventoryData(data.data.data || []);
-      setTotalPages(data.data.totalPage || 1);
-    } catch (error) {
-      console.error("Error fetching search results:", error);
-      setInventoryData([]);
-    }
-  };
 
   useEffect(() => {
-    if (searchTerm) {
-      fetchSearchResults();
-    } else {
-      fetchInventory();
-    }
-  }, [page, searchTerm]);
+    dispatch(fetchMedicines({ searchTerm, page, size: 10, sortBy: "name", sortName: "asc" }));
+    
+  }, [dispatch, searchTerm, page]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
-  const handleDelete = async (id) => {
-    try {
-      await fetch(`${API_URL}/${id}/0`, { method: "PUT" });
-      fetchInventory();
-    } catch (error) {
-      console.error("Error updating status:", error);
-    }
+
+  const handleDelete = (id) => {
+    dispatch(deleteMedicine(id));
   };
 
   return (
@@ -104,14 +54,14 @@ export const InventoryControlPage = () => {
               </tr>
             </thead>
             <tbody>
-              {inventoryData.map((item) => (
+              {medicines.map((item) => (
                 <tr key={item.id} className="text-center">
                   <td className="border p-2">{item.id}</td>
                   <td className="border p-2">{item.name}</td>
                   <td className="border p-2">{item.price.toFixed(2)}</td>
                   <td className="border p-2">{item.status}</td>
                   <td className="border p-2">
-                  <button 
+                    <button 
                       className="bg-red-500 text-white px-2 py-1 rounded"
                       onClick={() => handleDelete(item.id)}
                     >
