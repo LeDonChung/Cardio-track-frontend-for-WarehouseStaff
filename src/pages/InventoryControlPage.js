@@ -1,63 +1,30 @@
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import React, { useState, useEffect } from "react";
-
-const API_URL = "http://localhost:8888/api/v1/medicine";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchMedicines, deleteMedicine } from "../redux/slice/MedicineSlice";
 
 export const InventoryControlPage = () => {
-  const [inventoryData, setInventoryData] = useState([]);
+  const dispatch = useDispatch();
+  const medicineState = useSelector((state) => state.medicine) || {};
+  const { medicines = [], totalPages = 1 } = medicineState;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isFormVisible, setIsFormVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentItem, setCurrentItem] = useState(null);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    quantity: "",
-    location: "",
-    status: "",
-    price: "",
-    expiration_date: "",
-    notes: "",
-  });
-  const fetchInventory = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL}?page=${page}&size=10&sortBy=name&sortName=asc`
-      );
-      const data = await response.json();
-      console.log("API Response:", data); // Kiểm tra dữ liệu
-      console.log("totalPages:", data.data.totalPage); // Kiểm tra dữ liệu
-      setInventoryData(data.data.data || []); // Nếu data.items undefined, đặt thành []
-      setTotalPages(data.data.totalPage || 1);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-      setInventoryData([]); // Tránh lỗi khi API gặp vấn đề
-    }
-  };
 
   useEffect(() => {
-    fetchInventory();
-  }, [page]);
+    dispatch(fetchMedicines({ searchTerm, page, size: 10, sortBy: "name", sortName: "asc" }));
+    
+  }, [dispatch, searchTerm, page]);
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
-      console.log("Chuyển sang trang:", newPage);
       setPage(newPage);
     }
   };
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
 
-  const filteredData = inventoryData.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (selectedCategory === "all" ||
-        item.status.toLowerCase() === selectedCategory.toLowerCase())
-  );
+  const handleDelete = (id) => {
+    dispatch(deleteMedicine(id));
+  };
 
   return (
     <div className="bg-white text-gray-900 min-h-screen flex flex-col">
@@ -71,104 +38,9 @@ export const InventoryControlPage = () => {
             placeholder="Tìm kiếm..."
             className="border rounded p-2 w-1/3"
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select
-            className="border rounded p-2"
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
-            <option value="all">Tất cả</option>
-            <option value="available">Còn hàng</option>
-            <option value="low stock">Sắp hết hàng</option>
-          </select>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded">
-            Thêm mới
-          </button>
         </div>
-
-        {isFormVisible && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-              <h2 className="text-lg font-semibold mb-2">
-                {isEditing ? "Chỉnh sửa" : "Thêm mới"} sản phẩm
-              </h2>
-              <input
-                type="text"
-                placeholder="Tên"
-                className="border p-2 w-full mb-2"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-              <input
-                type="number"
-                placeholder="Số lượng"
-                className="border p-2 w-full mb-2"
-                value={formData.quantity}
-                onChange={(e) =>
-                  setFormData({ ...formData, quantity: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Vị trí"
-                className="border p-2 w-full mb-2"
-                value={formData.location}
-                onChange={(e) =>
-                  setFormData({ ...formData, location: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Trạng thái"
-                className="border p-2 w-full mb-2"
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
-                }
-              />
-              <input
-                type="number"
-                placeholder="Giá"
-                className="border p-2 w-full mb-2"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-              />
-              <input
-                type="date"
-                placeholder="Hạn sử dụng"
-                className="border p-2 w-full mb-2"
-                value={formData.expiration_date}
-                onChange={(e) =>
-                  setFormData({ ...formData, expiration_date: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Ghi chú"
-                className="border p-2 w-full mb-2"
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-              />
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="bg-gray-500 text-white px-4 py-2 rounded"
-                  onClick={() => setIsFormVisible(false)}
-                >
-                  Hủy
-                </button>
-                <button className="bg-green-500 text-white px-4 py-2 rounded">
-                  {isEditing ? "Lưu" : "Thêm"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300">
@@ -181,16 +53,18 @@ export const InventoryControlPage = () => {
                 <th className="border p-2">Hành động</th>
               </tr>
             </thead>
-
             <tbody>
-              {inventoryData.map((item) => (
+              {medicines.map((item) => (
                 <tr key={item.id} className="text-center">
                   <td className="border p-2">{item.id}</td>
                   <td className="border p-2">{item.name}</td>
-                  <td className="border p-2">${item.price.toFixed(2)}</td>
+                  <td className="border p-2">{item.price.toFixed(2)}</td>
                   <td className="border p-2">{item.status}</td>
                   <td className="border p-2">
-                    <button className="bg-red-500 text-white px-2 py-1 rounded">
+                    <button 
+                      className="bg-red-500 text-white px-2 py-1 rounded"
+                      onClick={() => handleDelete(item.id)}
+                    >
                       Xóa
                     </button>
                   </td>
@@ -225,7 +99,6 @@ export const InventoryControlPage = () => {
           </button>
         </div>
       </div>
-      {/* <Footer /> */}
     </div>
   );
 };
