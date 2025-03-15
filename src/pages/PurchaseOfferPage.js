@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { fetchSuppliers } from '../redux/slice/SupplierSlice';
+import { addSupplier } from '../redux/slice/SupplierSlice';
+import showToast from '../utils/AppUtils';
 
 export const PurchaseOfferPage = () => {
     const [productName, setProductName] = useState('');
@@ -10,12 +14,27 @@ export const PurchaseOfferPage = () => {
     const [price, setPrice] = useState('');
     const [discount, setDiscount] = useState('');
     const [expiryDate, setExpiryDate] = useState('');
-    const [selectedInventory, setSelectedInventory] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState('');
+    const [selectedSupplier, setSelectedSupplier] = useState('');
     const [products, setProducts] = useState([]);
+    const [supplierName, setSupplierName] = useState('');
+    const [supplierAddress, setSupplierAddress] = useState('');
+    const [supplierContactInfo, setSupplierContactInfo] = useState('');
     const [showSupplierModal, setShowSupplierModal] = useState(false);
     const [addedProducts, setAddedProducts] = useState([]); // New state to store added products
     const navigate = useNavigate();
+
+    const dispatch = useDispatch();
+
+    // Lấy dữ liệu từ Redux store
+    const { supplier, loading, error } = useSelector((state) => state.supplier);
+
+    useEffect(() => {
+        dispatch(fetchSuppliers({}));
+    }, [dispatch]);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     const availableCategories = ['Thuốc cảm', 'Thuốc ho', 'Thuốc dị ứng'];
     const availableSuppliers = ['Nhà Cung Cấp 1', 'Nhà Cung Cấp 2']; // Placeholder suppliers
@@ -31,28 +50,40 @@ export const PurchaseOfferPage = () => {
         navigate('/purchase-requests');
     };
 
-    const handleAddSupplier = (name, address, phone) => {
-        // Handle adding a new supplier here
-        console.log("New Supplier Added:", { name, address, phone });
-        setShowSupplierModal(false);
+    const handleAddSupplier = (e) => {
+        e.preventDefault();
+        
+        // Kiểm tra xem các trường có bị bỏ trống không
+        if (!supplierName || !supplierContactInfo || !supplierAddress) {
+            showToast("Vui lòng điền đầy đủ thông tin.", 'error');
+            return; // Ngừng thực hiện nếu có trường bị thiếu
+        }
+    
+        const newSupplier = {
+            name: supplierName,
+            contactInfo: supplierContactInfo,
+            address: supplierAddress,
+        };
+    
+        // Dispatch action to add the new supplier using Redux
+        dispatch(addSupplier(newSupplier))
+            .then(() => {
+                // Close modal after adding supplier
+                setShowSupplierModal(false);
+                showToast("Thêm nhà cung cấp thành công.", 'success');
+            })
+            .catch((error) => {
+                showToast("Đã có lỗi xảy ra khi thêm.", 'error');
+                console.log(error); // Log error for better debugging
+            });
     };
+    
 
     const handleCategoryChange = (e) => {
         const selectedCategory = e.target.value;
         setCategory(selectedCategory);
         setProducts(availableProducts[selectedCategory] || []);
         setSelectedProduct(''); // Reset product selection when category changes
-    };
-
-    const handleInventoryChange = (e) => {
-        const selectedValue = e.target.value;
-        if (!selectedInventory.includes(selectedValue)) {
-            setSelectedInventory((prevSelected) => [...prevSelected, selectedValue]);
-        }
-    };
-
-    const handleRemoveInventory = (inventoryToRemove) => {
-        setSelectedInventory((prevSelected) => prevSelected.filter(inventory => inventory !== inventoryToRemove));
     };
 
     const handleAddToList = () => {
@@ -87,18 +118,23 @@ export const PurchaseOfferPage = () => {
                             <label className="block text-sm font-medium text-gray-700">Chọn Nhà Cung Cấp</label>
                             <div className="flex items-center">
                                 <select
-                                    value={selectedProduct}
-                                    onChange={(e) => setSelectedProduct(e.target.value)}
-                                    className="p-4 border border-gray-300 rounded-lg w-3/4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={selectedSupplier}
+                                    onChange={(e) => setSelectedSupplier(e.target.value)}
+                                    className="p-3 border border-gray-300 rounded-lg w-3/4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     required
                                 >
-                                    <option value="">Chọn Nhà Cung Cấp</option>
-                                    {availableSuppliers.map((supplier, index) => (
-                                        <option key={index} value={supplier}>
-                                            {supplier}
-                                        </option>
-                                    ))}
+                                    <option value="">Chọn nhà cung cấp</option>
+                                    {supplier && supplier.length > 0 ? (
+                                        supplier.map((supplierItem, index) => (
+                                            <option key={index} value={supplierItem.id}>
+                                                {supplierItem.name}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <option value="">Không có nhà cung cấp nào</option>
+                                    )}
                                 </select>
+
                                 <button
                                     type="button"
                                     onClick={() => setShowSupplierModal(true)}
@@ -247,17 +283,25 @@ export const PurchaseOfferPage = () => {
                             type="text"
                             className="p-4 border border-gray-300 rounded-lg w-full mb-4"
                             placeholder="Tên Nhà Cung Cấp"
-                            onChange={(e) => setSelectedProduct(e.target.value)}
+                            value={supplierName}
+                            onChange={(e) => setSupplierName(e.target.value)}
+                            required
                         />
                         <input
                             type="text"
                             className="p-4 border border-gray-300 rounded-lg w-full mb-4"
                             placeholder="Địa Chỉ"
+                            value={supplierAddress}
+                            onChange={(e) => setSupplierAddress(e.target.value)}
+                            required
                         />
                         <input
                             type="text"
                             className="p-4 border border-gray-300 rounded-lg w-full mb-4"
-                            placeholder="Số Điện Thoại"
+                            placeholder="Thông Tin Liên Hệ"
+                            value={supplierContactInfo}
+                            onChange={(e) => setSupplierContactInfo(e.target.value)}
+                            required
                         />
                         <div className="flex justify-end">
                             <button
@@ -267,6 +311,7 @@ export const PurchaseOfferPage = () => {
                                 Hủy
                             </button>
                             <button
+                                type='submit'
                                 onClick={handleAddSupplier}
                                 className="bg-blue-500 text-white px-4 py-2 rounded"
                             >
