@@ -4,6 +4,7 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { fetchShelfs } from "../redux/slice/ShelfSlice";
 import { ShelfModal } from "../components/ShelfModal";
+import { searchShelf } from "../redux/slice/ShelfSlice";
 
 export const InventoryLocationPage = () => {
   const dispatch = useDispatch();
@@ -16,9 +17,12 @@ export const InventoryLocationPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchShelfs({ page, size: 10, sortBy: "id", sortName: "asc" }));
-    console.log(shelves);
-  }, [dispatch, page]);
+    if (search.trim() === "") {
+      dispatch(fetchShelfs({ page, size: 10, sortBy: "id", sortName: "asc" }));
+    } else {
+      dispatch(searchShelf({ location: search })); // Gọi API tìm kiếm
+    }
+  }, [dispatch, page, search]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 0 && newPage <= totalPages) {
@@ -34,7 +38,6 @@ export const InventoryLocationPage = () => {
     setModalOpen(false);
     setSelectedShelf(null);
   };
-  const handleSave = () => {};
 
   const filteredLocations = shelves
     .filter((loc) => loc.location.toLowerCase().includes(search.toLowerCase()))
@@ -55,6 +58,8 @@ export const InventoryLocationPage = () => {
             type="text"
             placeholder="Tìm kiếm vị trí..."
             className="border p-2 w-full"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
           <select
             className="border p-2"
@@ -125,7 +130,13 @@ export const InventoryLocationPage = () => {
           </button>
         </div>
       </main>
-      {modalOpen && <ShelfModal isOpen={modalOpen} onClose={closeModal} shelf={selectedShelf} />}
+      {modalOpen && (
+        <ShelfModal
+          isOpen={modalOpen}
+          onClose={closeModal}
+          shelf={selectedShelf}
+        />
+      )}
       {/* <Footer /> */}
     </div>
   );
