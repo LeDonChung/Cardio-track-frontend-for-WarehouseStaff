@@ -39,6 +39,21 @@ export const updateShelf = createAsyncThunk(
   }
 );
 
+//search
+export const searchShelf = createAsyncThunk(
+  "shelf/searchShelf",
+  async ({ location }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/api/v1/shelf/location", {
+        params: { page:0, size: 10, sortBy:"location", sortName:"asc", location },
+      });
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const shelfSlice = createSlice({
   name: "shelf",
   initialState: { shelves: [], totalPages: 1 },
@@ -50,5 +65,6 @@ const shelfSlice = createSlice({
     });
   },
 });
+
 
 export default shelfSlice.reducer;
