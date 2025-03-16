@@ -5,7 +5,10 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { fetchSuppliers } from '../redux/slice/SupplierSlice';
 import { addSupplier } from '../redux/slice/SupplierSlice';
+import { fetchCategorys } from '../redux/slice/CategorySlice';
+import { fetchMedicinesByCategoryTitle } from '../redux/slice/MedicineSlice';
 import showToast from '../utils/AppUtils';
+import { fetchMedicineById } from '../redux/slice/MedicineSlice';
 
 export const PurchaseOfferPage = () => {
     const [productName, setProductName] = useState('');
@@ -28,21 +31,17 @@ export const PurchaseOfferPage = () => {
 
     // Lấy dữ liệu từ Redux store
     const { supplier, loading, error } = useSelector((state) => state.supplier);
+    const { categorys } = useSelector((state) => state.categorys);
+    const { medicines } = useSelector((state) => state.medicine);
 
     useEffect(() => {
         dispatch(fetchSuppliers({}));
     }, [dispatch]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    useEffect(() => {
+        dispatch(fetchCategorys({}));
+    }, [dispatch]);
 
-    const availableCategories = ['Thuốc cảm', 'Thuốc ho', 'Thuốc dị ứng'];
-    const availableSuppliers = ['Nhà Cung Cấp 1', 'Nhà Cung Cấp 2']; // Placeholder suppliers
-    const availableProducts = {
-        'Thuốc cảm': ['Cảm cúm A', 'Cảm cúm B'],
-        'Thuốc ho': ['Ho khan', 'Ho có đờm'],
-        'Thuốc dị ứng': ['Thuốc dị ứng A', 'Thuốc dị ứng B']
-    };
 
     const handleAddRequest = (e) => {
         e.preventDefault();
@@ -52,46 +51,68 @@ export const PurchaseOfferPage = () => {
 
     const handleAddSupplier = (e) => {
         e.preventDefault();
-        
+
         // Kiểm tra xem các trường có bị bỏ trống không
         if (!supplierName || !supplierContactInfo || !supplierAddress) {
             showToast("Vui lòng điền đầy đủ thông tin.", 'error');
             return; // Ngừng thực hiện nếu có trường bị thiếu
         }
-    
+
         const newSupplier = {
             name: supplierName,
             contactInfo: supplierContactInfo,
             address: supplierAddress,
         };
-    
+
         // Dispatch action to add the new supplier using Redux
         dispatch(addSupplier(newSupplier))
             .then(() => {
-                // Close modal after adding supplier
                 setShowSupplierModal(false);
                 showToast("Thêm nhà cung cấp thành công.", 'success');
             })
             .catch((error) => {
                 showToast("Đã có lỗi xảy ra khi thêm.", 'error');
-                console.log(error); // Log error for better debugging
+                console.log(error);
             });
     };
-    
 
-    const handleCategoryChange = (e) => {
+    const handleCategoryChange = async (e) => {
         const selectedCategory = e.target.value;
         setCategory(selectedCategory);
-        setProducts(availableProducts[selectedCategory] || []);
-        setSelectedProduct(''); // Reset product selection when category changes
+        setSelectedProduct(''); // Reset khi chọn danh mục mới
+
+        if (selectedCategory) {
+            // Gọi API lấy thuốc theo danh mục
+            dispatch(fetchMedicinesByCategoryTitle({ title: selectedCategory }));
+        }
     };
+
+    useEffect(() => {
+        if (medicines && medicines.length > 0) {
+            setProducts(medicines);
+        }
+    }, [medicines]);
+
+    const handleProductChange = (e) => {
+        const selectedProductId = e.target.value;
+        setSelectedProduct(selectedProductId);
+        dispatch(fetchMedicineById(selectedProductId));
+    }
+
+    useEffect(() => {
+        if (medicines) {
+            setPrice(medicines.price);
+            setDiscount(medicines.discount);
+        }
+    }, [medicines]);
+
 
     const handleAddToList = () => {
         if (selectedProduct && quantity && price) {
             const newProduct = {
-                productName: selectedProduct,
+                productName: medicines.name,
                 quantity,
-                price,
+                price: medicines.price,
                 discount,
                 expiryDate
             };
@@ -105,6 +126,10 @@ export const PurchaseOfferPage = () => {
             alert('Vui lòng điền đầy đủ thông tin');
         }
     };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
 
     return (
         <div className="bg-gray-100 text-gray-900 min-h-screen">
@@ -155,27 +180,32 @@ export const PurchaseOfferPage = () => {
                                 required
                             >
                                 <option value="">Chọn danh mục</option>
-                                {availableCategories.map((categoryOption, index) => (
-                                    <option key={index} value={categoryOption}>
-                                        {categoryOption}
-                                    </option>
-                                ))}
+                                {categorys && categorys.length > 0 ? (
+                                    categorys.map((categorysItem, index) => (
+                                        <option key={index} value={categorysItem.title}>
+                                            {categorysItem.title}
+                                        </option>
+                                    ))
+                                ) : (
+                                    <option value="">Không có danh mục nào</option>
+                                )}
                             </select>
                         </div>
 
+                        {/* ComboBox for Product */}
                         {/* ComboBox for Product */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Tên Thuốc</label>
                             <select
                                 value={selectedProduct}
-                                onChange={(e) => setSelectedProduct(e.target.value)}
+                                onChange={handleProductChange}
                                 className="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required
                             >
                                 <option value="">Chọn Thuốc</option>
                                 {products.map((product, index) => (
-                                    <option key={index} value={product}>
-                                        {product}
+                                    <option key={index} value={product.id}> {/* Assuming `product.id` is the unique identifier */}
+                                        {product.name} {/* Assuming `product.name` is the display name */}
                                     </option>
                                 ))}
                             </select>
@@ -183,17 +213,6 @@ export const PurchaseOfferPage = () => {
 
                         {/* Quantity and Price Fields */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">Số Lượng</label>
-                                <input
-                                    type="number"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(e.target.value)}
-                                    className="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="Nhập số lượng"
-                                    required
-                                />
-                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Giá</label>
                                 <input
@@ -203,12 +222,9 @@ export const PurchaseOfferPage = () => {
                                     className="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Nhập giá"
                                     required
+                                    disabled
                                 />
                             </div>
-                        </div>
-
-                        {/* Discount and Expiry Date Fields */}
-                        <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Giảm Giá</label>
                                 <input
@@ -217,6 +233,22 @@ export const PurchaseOfferPage = () => {
                                     onChange={(e) => setDiscount(e.target.value)}
                                     className="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Nhập giảm giá"
+                                    required
+                                    disabled
+                                />
+                            </div>
+                        </div>
+
+                        {/* Discount and Expiry Date Fields */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Số Lượng</label>
+                                <input
+                                    type="number"
+                                    value={quantity}
+                                    onChange={(e) => setQuantity(e.target.value)}
+                                    className="p-4 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Nhập số lượng"
                                     required
                                 />
                             </div>

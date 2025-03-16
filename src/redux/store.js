@@ -7,6 +7,7 @@ import PurchaseOrderDetailSlice from './slice/PurchaseOrderDetailSlice';
 import MedicineSlice from './slice/MedicineSlice';
 import ShelfSlice from './slice/ShelfSlice';
 import SupplierSlice from './slice/SupplierSlice';
+import CategorySlice from './slice/CategorySlice';
 
 const store = configureStore({
     reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
         medicine: MedicineSlice,
         shelf: ShelfSlice,
         supplier: SupplierSlice,
+        categorys: CategorySlice,
     },
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware({
