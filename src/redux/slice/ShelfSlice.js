@@ -54,15 +54,41 @@ export const searchShelf = createAsyncThunk(
   }
 );
 
+//Cập nhật số lượng sản phẩm của kệ sau khi nhập kho
+export const updateShelfQuantity = createAsyncThunk(
+    "shelf/updateShelfQuantity",
+    async ({ id, quantity }, { rejectWithValue }) => {
+      try {
+        // Gửi yêu cầu PUT với tham số qua query string
+        const response = await axiosInstance.put(`/api/v1/shelf/updateTotalProduct`, null, {
+          params: {
+            id, 
+            quantity
+          }
+        });
+        console.log(response.data.data);
+        return response.data.data;
+      } catch (error) {
+        return rejectWithValue(error.response.data);
+      }
+    }
+  );
+  
+
 const shelfSlice = createSlice({
   name: "shelf",
   initialState: { shelves: [], totalPages: 1 },
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchShelfs.fulfilled, (state, action) => {
-        console.log("dda",action.payload.data);
       state.shelves = action.payload?.data || [];
       state.totalPages = action.payload?.totalPages || 1;
+    });
+    builder.addCase(updateShelfQuantity.fulfilled, (state, action) => {
+      const index = state.shelves.findIndex((shelf) => shelf.id === action.payload.id);
+      if (index !== -1) {
+        state.shelves[index] = action.payload;
+      }
     });
   },
 });

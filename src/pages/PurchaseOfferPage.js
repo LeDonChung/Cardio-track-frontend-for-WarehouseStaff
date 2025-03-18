@@ -27,6 +27,7 @@ export const PurchaseOfferPage = () => {
     const [supplierContactInfo, setSupplierContactInfo] = useState('');
     const [showSupplierModal, setShowSupplierModal] = useState(false);
     const [addedProducts, setAddedProducts] = useState([]); // New state to store added products
+    // const [activeTab, setActiveTab] = useState('purchare-order');
     const navigate = useNavigate();
 
     const dispatch = useDispatch();
@@ -75,8 +76,7 @@ export const PurchaseOfferPage = () => {
         dispatch(createPurchaseOrder(purchaseOrder))
             .then(() => {
                 showToast("Đơn mua đã được tạo thành công.", 'success');
-                navigate('/import'); // Chuyển hướng tới trang nhập kho
-                setActiveTab('purchare-order');
+                navigate('/import',{ state: { activeTab: 'purchare-order' }}); // Chuyển hướng tới trang nhập kho
             })
             .catch((error) => {
                 showToast("Đã có lỗi xảy ra khi tạo đơn mua.", 'error');
