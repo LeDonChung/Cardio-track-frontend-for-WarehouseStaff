@@ -20,9 +20,10 @@ export const fetchPurchaseOrders = createAsyncThunk(
 // Lấy đơn mua hàng theo trạng thái chờ xác nhận
 export const fetchPurchaseOrderByPendingStatus = createAsyncThunk(
     'purchaseOrder/fetchPurchaseOrderByPendingStatus',
-    async (id, { rejectWithValue }) => {
+    async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.get(`/api/v1/purchase-order/pending`);
+            const response = await axiosInstance.get(`/api/v1/purchase-order/pending`, {
+                params: { page, size, sortBy, sortName }});
             return response.data.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -46,6 +47,36 @@ export const ChangeStatusPurchaseOrder = createAsyncThunk(
     }
 );
 
+// Them don mua hang
+export const createPurchaseOrder = createAsyncThunk(
+    'purchaseOrder/createPurchaseOrder',
+    async (purchaseOrder, { rejectWithValue }) => {
+        try {
+            // Chuyển đổi thông tin từ đơn mua thành đơn nhập kho
+            const purchaseOrderRequest = {
+                orderDate: new Date().toISOString(),
+                supplierId: purchaseOrder.supplierId, // Nhà cung cấp
+                purchaseOrderDetails: purchaseOrder.purchaseOrderDetails.map(item => ({
+                    discount: item.discount,
+                    price: item.price,
+                    quantity: item.quantity,
+                    medicine: item.medicine,
+                    category: item.category,
+                    expirationDate: item.expirationDate
+                }))
+            };
+
+            console.log("purchaseOrderRequest",purchaseOrderRequest);
+
+
+            const response = await axiosInstance.post('/api/v1/purchase-order/add', purchaseOrderRequest);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data); // Nếu có lỗi thì trả về thông báo lỗi
+        }
+    }
+)
+
 
 const purchaseOrderSlice = createSlice({
     name: 'purchaseOrderByPendingStatus',
@@ -62,7 +93,7 @@ const purchaseOrderSlice = createSlice({
             })
             .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.purchaseOrderByPendingStatus = action.payload; 
+                state.purchaseOrderByPendingStatus = action.payload;
             })
             .addCase(fetchPurchaseOrders.rejected, (state, action) => {
                 state.loading = false;
@@ -73,7 +104,7 @@ const purchaseOrderSlice = createSlice({
             })
             .addCase(fetchPurchaseOrderByPendingStatus.fulfilled, (state, action) => {
                 state.loading = false;
-                state.purchaseOrderByPendingStatus = action.payload; // Lưu chi tiết đơn nhập vào state
+                state.purchaseOrderByPendingStatus = action.payload.data; // Lưu chi tiết đơn nhập vào state
             })
             .addCase(fetchPurchaseOrderByPendingStatus.rejected, (state, action) => {
                 state.loading = false;
@@ -93,7 +124,18 @@ const purchaseOrderSlice = createSlice({
             .addCase(ChangeStatusPurchaseOrder.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload; // Lỗi khi lấy chi tiết đơn nhập
-            });
+            })
+            .addCase(createPurchaseOrder.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(createPurchaseOrder.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseOrderByPendingStatus.push(action.payload.data); // Thêm đơn mới vào danh sách
+            })
+            .addCase(createPurchaseOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.data; // Xử lý lỗi khi tạo đơn nhập thất bại
+            });;
     },
 });
 export default purchaseOrderSlice.reducer;

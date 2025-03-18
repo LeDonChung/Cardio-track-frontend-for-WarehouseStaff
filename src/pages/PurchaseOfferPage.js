@@ -9,10 +9,12 @@ import { fetchCategorys } from '../redux/slice/CategorySlice';
 import { fetchMedicinesByCategoryTitle } from '../redux/slice/MedicineSlice';
 import showToast from '../utils/AppUtils';
 import { fetchMedicineById } from '../redux/slice/MedicineSlice';
+import { createPurchaseOrder } from '../redux/slice/PurchaseOrderSlice';
 
 export const PurchaseOfferPage = () => {
     const [productName, setProductName] = useState('');
     const [category, setCategory] = useState('');
+    const [categoryId, setCategoryId] = useState('');
     const [quantity, setQuantity] = useState('');
     const [price, setPrice] = useState('');
     const [discount, setDiscount] = useState('');
@@ -45,8 +47,41 @@ export const PurchaseOfferPage = () => {
 
     const handleAddRequest = (e) => {
         e.preventDefault();
-        // Handle adding new purchase request here
-        navigate('/purchase-requests');
+
+        if (addedProducts.length === 0) {
+            showToast("Vui lòng thêm ít nhất một sản phẩm vào danh sách.", 'error');
+            return; // Nếu không có sản phẩm nào, ngừng thực hiện.
+        }
+    
+        if (!selectedSupplier) {
+            showToast("Vui lòng chọn nhà cung cấp.", 'error');
+            return; // Nếu không có nhà cung cấp được chọn, ngừng thực hiện.
+        }
+    
+        // Tạo đối tượng đơn mua từ danh sách các sản phẩm đã thêm
+        const purchaseOrder = {
+            supplierId: selectedSupplier,
+            purchaseOrderDetails: addedProducts.map(product => ({
+                medicine: product.productId, 
+                category: product.categoryId,
+                quantity: product.quantity,
+                price: product.price,
+                discount: product.discount,
+                expirationDate: product.expiryDate
+            }))
+        };
+    
+        // Dispatch action createPurchaseOrder
+        dispatch(createPurchaseOrder(purchaseOrder))
+            .then(() => {
+                showToast("Đơn mua đã được tạo thành công.", 'success');
+                navigate('/import'); // Chuyển hướng tới trang nhập kho
+                setActiveTab('purchare-order');
+            })
+            .catch((error) => {
+                showToast("Đã có lỗi xảy ra khi tạo đơn mua.", 'error');
+                console.log(error);
+            });
     };
 
     const handleAddSupplier = (e) => {
@@ -79,7 +114,11 @@ export const PurchaseOfferPage = () => {
     const handleCategoryChange = async (e) => {
         const selectedCategory = e.target.value;
         setCategory(selectedCategory);
-        setSelectedProduct(''); // Reset khi chọn danh mục mới
+        setSelectedProduct(''); 
+
+        const selectedOption = e.target.selectedOptions[0];
+        const categoryId = selectedOption ? selectedOption.dataset.id : '';
+        setCategoryId(categoryId);
 
         if (selectedCategory) {
             // Gọi API lấy thuốc theo danh mục
@@ -111,21 +150,25 @@ export const PurchaseOfferPage = () => {
         if (selectedProduct && quantity && price) {
             const newProduct = {
                 productName: medicines.name,
+                productId: medicines.id,
+                category: category,
+                categoryId: categoryId,
                 quantity,
                 price: medicines.price,
                 discount,
                 expiryDate
             };
             setAddedProducts((prev) => [...prev, newProduct]);
-            setProductName('');
-            setQuantity('');
-            setPrice('');
-            setDiscount('');
-            setExpiryDate('');
+            // setProductName('');
+            // setQuantity('');
+            // setPrice('');
+            // setDiscount('');
+            // setExpiryDate('');
         } else {
             alert('Vui lòng điền đầy đủ thông tin');
         }
     };
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -182,7 +225,7 @@ export const PurchaseOfferPage = () => {
                                 <option value="">Chọn danh mục</option>
                                 {categorys && categorys.length > 0 ? (
                                     categorys.map((categorysItem, index) => (
-                                        <option key={index} value={categorysItem.title}>
+                                        <option key={index} value={categorysItem.title} data-id={categorysItem.id}>
                                             {categorysItem.title}
                                         </option>
                                     ))
@@ -281,6 +324,7 @@ export const PurchaseOfferPage = () => {
                                     {addedProducts.map((product, index) => (
                                         <li key={index} className="border p-4 rounded-lg">
                                             <p><strong>Sản phẩm:</strong> {product.productName}</p>
+                                            <p><strong>Danh mục:</strong>{product.category}</p>
                                             <p><strong>Số lượng:</strong> {product.quantity}</p>
                                             <p><strong>Giá:</strong> {product.price}</p>
                                             <p><strong>Giảm giá:</strong> {product.discount}</p>
@@ -295,6 +339,7 @@ export const PurchaseOfferPage = () => {
                         <button
                             type="submit"
                             className="bg-indigo-600 text-white py-3 px-6 rounded-lg mt-6 w-full hover:bg-indigo-700 transition duration-300"
+                            onCanPlay={handleAddRequest}
                         >
                             Xác Nhận
                         </button>

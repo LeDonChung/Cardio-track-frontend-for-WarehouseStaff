@@ -62,12 +62,13 @@ export const InventoryImportPage = () => {
 
     useEffect(() => {
         if (activeTab === 'purchare-order') {
-            dispatch(fetchPurchaseOrderByPendingStatus());  // Lấy dữ liệu khi tab được chọn
+            dispatch(fetchPurchaseOrderByPendingStatus({page: 0, size: 1000, sortBy: 'id', sortName: 'desc'}));  // Lấy dữ liệu khi tab được chọn
         }
     }, [activeTab, dispatch]);
 
     useEffect(() => {
-        dispatch(fetchPurchaseOrderByPendingStatus());
+        dispatch(fetchPurchaseOrderByPendingStatus({page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc'}));
+        console.log('Danh sách đơn mua:', purchaseOrderByPendingStatus);
     }, [purchaseOrderByPendingStatus]);  // Log dữ liệu sau khi đã lấy xong
 
     useEffect(() => {
@@ -406,8 +407,8 @@ export const InventoryImportPage = () => {
                                 {purchaseOrderByPendingStatus.length === 0 ? (
                                     <div>Không có đơn mua lô thuốc nào.</div>
                                 ) : (
-                                    purchaseOrderByPendingStatus.map((order) => (
-                                        <div key={order.id} className="border p-4 rounded-md shadow-md bg-gray-50">
+                                    purchaseOrderByPendingStatus.map((order,index) => (
+                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50">
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">Mã đơn: {order.id}</span>
                                                 <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
