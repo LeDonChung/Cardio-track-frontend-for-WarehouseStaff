@@ -79,6 +79,19 @@ export const fetchMedicineById = createAsyncThunk(
     }
 );
 
+//Tìm thuốc theo id gọi client qua product-service
+export const fetchMedicineById_client = createAsyncThunk(
+    'medicine/fetchMedicineById_client',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/api/v1/medicine/${id}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const medicineSlice = createSlice({
     name: "medicine",
     initialState: { medicines: [], totalPages: 1 },
@@ -88,6 +101,7 @@ const medicineSlice = createSlice({
             state.medicines = action.payload || [];
         });
         builder.addCase(fetchMedicineById.fulfilled, (state, action) => {
+            console.log("ss",action.payload);
             state.medicines = action.payload || [];
         });
         builder.addCase(fetchMedicines.fulfilled, (state, action) => {
@@ -99,6 +113,17 @@ const medicineSlice = createSlice({
         });
         builder.addCase(updateMedicine.fulfilled, (state, action) => {
             state.medicines = state.medicines.map((item) => (item.id === action.payload.id ? action.payload : item));
+        });
+        builder.addCase(fetchMedicineById_client.fulfilled, (state, action) => {
+            const newMedicine = action.payload;
+            
+            // Kiểm tra nếu thuốc đã có trong state
+            const existingMedicine = state.medicines.find(medicine => medicine.id === newMedicine.id);
+            
+            if (!existingMedicine) {
+                // Nếu chưa có thì thêm thuốc mới vào state
+                state.medicines.push(newMedicine);
+            }
         });
     },
 });

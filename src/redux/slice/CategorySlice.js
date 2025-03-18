@@ -13,6 +13,19 @@ export const fetchCategorys = createAsyncThunk(
     }
 );
 
+//Tìm danh mục thuốc theo id gọi client qua product-service
+export const fetchCategoryById_client = createAsyncThunk(
+    'category/fetchCategoryById_client',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/api/v1/category/${id}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const categorySlice = createSlice({
     name: 'categorys',
     initialState: {
@@ -34,6 +47,14 @@ const categorySlice = createSlice({
                 state.loading = false;
                 state.error = action.payload; // Lỗi khi lấy chi tiết đơn nhập
             });
+        builder.addCase(fetchCategoryById_client.fulfilled, (state, action) => {
+            const newCategory = action.payload;
+            const existingCategory = state.categorys.find(category => category.id === newCategory.id);
+
+            if (!existingCategory) {
+                state.categorys.push(newCategory);
+            }
+        });
     },
 });
 

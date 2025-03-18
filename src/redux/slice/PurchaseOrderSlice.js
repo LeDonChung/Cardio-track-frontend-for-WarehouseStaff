@@ -2,6 +2,21 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../api/APIClient'; // Import axiosInstance từ APIClient
 
+// Lấy danh sách đơn mua hàng
+export const fetchPurchaseOrders = createAsyncThunk(
+    'purchaseOrder/fetchPurchaseOrders',
+    async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/purchase-order', {
+                params: { page, size, sortBy, sortName },
+            });
+            return response.data.data; // Trả về `data` từ trường `data` trong phản hồi API
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 // Lấy đơn mua hàng theo trạng thái chờ xác nhận
 export const fetchPurchaseOrderByPendingStatus = createAsyncThunk(
     'purchaseOrder/fetchPurchaseOrderByPendingStatus',
@@ -42,6 +57,17 @@ const purchaseOrderSlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
+            .addCase(fetchPurchaseOrders.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
+                state.loading = false;
+                state.purchaseOrderByPendingStatus = action.payload; 
+            })
+            .addCase(fetchPurchaseOrders.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload; // Lỗi khi lấy chi tiết đơn nhập
+            })
             .addCase(fetchPurchaseOrderByPendingStatus.pending, (state) => {
                 state.loading = true;
             })

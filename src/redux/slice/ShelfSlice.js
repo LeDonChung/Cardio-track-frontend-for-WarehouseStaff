@@ -21,6 +21,7 @@ const shelfSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchShelfs.fulfilled, (state, action) => {
+        console.log("dda",action.payload.data);
       state.shelves = action.payload?.data || [];
       state.totalPages = action.payload?.totalPages || 1;
     });
