@@ -1,11 +1,73 @@
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPurchaseOrders } from '../redux/slice/PurchaseOrderSlice';
+import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
+import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
+import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
 
 export const SuplierPage = () => {
     const [activeTab, setActiveTab] = useState('history');
     const [isOrderDetailOpen, setIsOrderDetailOpen] = useState(false);
     const [isQualityCheckOpen, setIsQualityCheckOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const pageSize = 10;
+
+    const dispatch = useDispatch();
+
+    // Lấy dữ liệu từ Redux store
+    const { supplier, loading, error } = useSelector((state) => state.supplier);
+    const { purchaseOrderByPendingStatus } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { purchaseOrderDetail } = useSelector((state) => state.purchaseOrderDetail);
+    const { medicines } = useSelector((state) => state.medicine);
+    const { categorys } = useSelector((state) => state.categorys);
+
+
+    // Gửi yêu cầu API khi trang thay đổi
+    useEffect(() => {
+        dispatch(fetchPurchaseOrders({ page: currentPage, size: pageSize, sortBy: 'orderDate', sortName: 'desc' }));
+    }, [dispatch, currentPage]);
+
+
+    // Hàm chuyển sang trang tiếp theo
+    const nextPage = () => {
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
+    // Hàm chuyển về trang trước đó
+    const prevPage = () => {
+        setCurrentPage(prevPage => (prevPage > 0 ? prevPage - 1 : 0));
+    };
+
+    // Mở modal chi tiết đơn hàng
+    const openDetailModal = (purchaseOrder) => {
+        dispatch(fetchPurchaseOrderDetailById(purchaseOrder.id));
+        purchaseOrder.purchaseOrderDetails.forEach((detail) => {
+            const medicineId = detail.medicine;
+            const categoryId = detail.category;
+
+            // Kiểm tra nếu thuốc đã có trong state
+            const medicine = medicines.find(item => item.id === medicineId);
+            const category = categorys.find(item => item.id === categoryId);
+
+            if (!medicine) {
+                // Nếu thuốc chưa có trong state, gọi fetchMedicineById để tải thông tin
+                dispatch(fetchMedicineById_client(medicineId));
+            }
+
+            if (!category) {
+                // Nếu danh mục chưa có trong state, gọi fetchCategoryById để tải thông tin
+                dispatch(fetchCategoryById_client(categoryId));
+            }
+        });
+        setIsOrderDetailOpen(true);
+    };
+
+    console.log("medicnie:", medicines);
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
         <div className="bg-white text-gray-900">
@@ -30,33 +92,32 @@ export const SuplierPage = () => {
                 </div>
 
                 {/* Tab Content */}
+                {/* Tab Content */}
                 {activeTab === 'history' && (
                     <div>
-                        <div className='flex'>
+                        <div className="flex">
                             <h2 className="text-2xl font-bold mb-4">Lịch sử giao dịch</h2>
-                            <button
-                                // onClick={() => setIsQualityCheckOpen(true)}
-                                className="bg-blue-800 text-white py-2 px-4 rounded-lg ml-auto mb-2"
-                            >
-                                Đặt mua thuốc
-                            </button>
                         </div>
                         <div className="space-y-4">
                             {/* Item List */}
-                            {[1, 2, 3].map((item, index) => (
+                            {purchaseOrderByPendingStatus?.data?.map((purchaseOrder, index) => (
                                 <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
-                                    <h4>15:00 ngày 30/4/2024</h4>
+                                    <div className="flex justify-between items-center mb-2">
+
+                                        <h3 className="font-semibold">{purchaseOrder.supplierName}</h3>
+                                        <h4 className="ml-auto">{purchaseOrder.orderDate}</h4>
+                                        <h4 className="ml-auto">{purchaseOrder.status}</h4>
+                                    </div>
                                     <div className="flex justify-between items-center mb-2">
                                         <div>
-                                            <h3 className="font-semibold">Supplier {index + 1} .......................................</h3>
-                                            <p className="text-sm text-gray-600">Address {index + 1}</p>
-                                            <p className="text-sm text-gray-600">Contact {index + 1}</p>
-                                            <p className="text-sm text-gray-600">Tổng lượng hàng cung cấp: 300</p>
-                                            <p className="text-sm text-gray-600">Thuộc: 3 danh mục thuốc</p>
+                                            <p className="text-sm text-gray-600">{purchaseOrder.supplierAddress}</p>
+                                            <p className="text-sm text-gray-600">{purchaseOrder.supplierContactInfo}</p>
+                                            {/* <p className="text-sm text-gray-600">Tổng lượng hàng cung cấp: {purchaseOrder.supplier.totalQuantity}</p>
+                                            <p className="text-sm text-gray-600">Thuộc: {purchaseOrder.supplier.categoriesCount} danh mục thuốc</p> */}
                                         </div>
                                         <div className="flex space-x-4">
                                             <button
-                                                onClick={() => setIsOrderDetailOpen(true)}
+                                                onClick={() => openDetailModal(purchaseOrder)}
                                                 className="bg-blue-500 text-white py-2 px-4 rounded-lg"
                                             >
                                                 Xem chi tiết đơn hàng
@@ -71,6 +132,23 @@ export const SuplierPage = () => {
                                     </div>
                                 </div>
                             ))}
+
+                            {/* Các nút chuyển trang */}
+                            <div className="flex justify-center space-x-4 mt-4">
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 0}
+                                    className="bg-gray-500 text-white py-2 px-4 rounded-md disabled:opacity-50"
+                                >
+                                    <i className="fas fa-chevron-left"></i> Trước
+                                </button>
+                                <button
+                                    onClick={nextPage}
+                                    className="bg-blue-500 text-white py-2 px-4 rounded-md"
+                                >
+                                    Tiếp theo <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -109,26 +187,22 @@ export const SuplierPage = () => {
             <Footer />
 
             {/* Modals */}
-            <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} />
+            <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys}/>
             <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} />
         </div>
     );
 }
 
 // Modal Chi tiết đơn hàng
-const OrderDetailModal = ({ isOpen, onClose }) => {
+const OrderDetailModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, categorys }) => {
+
     if (!isOpen) return null;
+    console.log("medicines no:", medicines);
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-8 rounded-lg w-2/3 max-w-4xl">
                 <h3 className="text-2xl font-bold mb-4">Chi tiết đơn hàng</h3>
-                {/* Các thông tin chi tiết */}
-                <div className="flex justify-between mb-4">
-                    <p><strong>Thời gian giao dịch:</strong> 07:50 01/01/2025</p>
-                    <p><strong>Người mua:</strong> Quản lý 2</p>
-                </div>
-                <p><strong>Chủ thể:</strong> Công ty ABC, Nhà cung cấp XYZ</p>
 
                 <div className="space-y-2 mt-4">
                     <h4 className="font-semibold">Danh sách sản phẩm cung cấp</h4>
@@ -137,22 +211,31 @@ const OrderDetailModal = ({ isOpen, onClose }) => {
                             {/* Header */}
                             <thead className="bg-gray-200 sticky top-0 z-10">
                                 <tr>
-                                    <th className="px-4 py-2 text-left">Sản phẩm</th>
+                                    <th className="px-4 py-2 text-left">Tên thuốc</th>
                                     <th className="px-4 py-2 text-left">Danh mục</th>
                                     <th className="px-4 py-2 text-left">Số lượng</th>
                                     <th className="px-4 py-2 text-left">Đơn giá</th>
+                                    <th className="px-4 py-2 text-left">Giảm giá</th>
+                                    <th className="px-4 py-2 text-left">Ngày hết hạn</th>
                                 </tr>
                             </thead>
                             {/* Body with scroll */}
                             <tbody className="overflow-y-auto">
-                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((product, index) => (
-                                    <tr key={index} className="border-b">
-                                        <td className="px-4 py-2">Sản phẩm {index + 1}</td>
-                                        <td className="px-4 py-2">Thuốc giảm đau</td>
-                                        <td className="px-4 py-2">100</td>
-                                        <td className="px-4 py-2">500</td>
-                                    </tr>
-                                ))}
+                                {purchaseOrderDetail.map((orderDetail, index) => {
+                                    // Tìm thuốc theo medicineId
+                                    const medicine = medicines.find(med => med.id === orderDetail.medicine);
+                                    const category = categorys.find(cat => cat.id === orderDetail.category);
+                                    return (
+                                        <tr key={index} className="border-b">
+                                            <td className="px-4 py-2">{medicine ? medicine.name : 'Chưa có tên thuốc'}</td>
+                                            <td className="px-4 py-2">{category ? category.title: 'Chưa có tên loại'}</td>
+                                            <td className="px-4 py-2">{orderDetail.quantity}</td>
+                                            <td className="px-4 py-2">{orderDetail.price}</td>
+                                            <td className="px-4 py-2">{orderDetail.discount}</td>
+                                            <td className="px-4 py-2">{orderDetail.expirationDate}</td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -164,6 +247,9 @@ const OrderDetailModal = ({ isOpen, onClose }) => {
         </div>
     );
 };
+
+
+
 
 
 // Modal Kiểm kê chất lượng
