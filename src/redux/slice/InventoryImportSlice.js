@@ -25,7 +25,7 @@ export const createInventoryImport = createAsyncThunk(
             const inventoryImportRequest = {
                 recipient: purchaseOrder.recipient,
                 importDate: new Date().toISOString(), // Thời gian nhập kho (có thể là thời gian hiện tại)
-                notes: purchaseOrder.notes || "Chờ nhập vào kho", // Nếu không có ghi chú thì mặc định
+                notes: purchaseOrder.notes || "New", // Nếu không có ghi chú thì mặc định
                 recipient: "Mai Chiến Nô", // Người nhận hàng
                 supplier: purchaseOrder.supplierId, // Nhà cung cấp
                 inventory: 1, // Kho nhập hàng

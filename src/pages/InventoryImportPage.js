@@ -203,7 +203,7 @@ export const InventoryImportPage = () => {
 
     const handleSubmitImport = () => {
         const shelfs = Object.keys(shelfForProduct).map(productId => ({
-            medincineId: productId,
+            medincineId: shelfForProduct[productId]?.thuocId,
             quantity: shelfForProduct[productId]?.quantity,
             shelfId: shelfForProduct[productId]?.shelfId,
         }));
@@ -211,8 +211,20 @@ export const InventoryImportPage = () => {
         // Kiểm tra xem đã chọn đầy đủ kệ cho tất cả các sản phẩm chưa
         if (shelfs.length !== inventoryImportDetail.length) {
             showToast("Bạn chưa chọn đủ kệ cho tất cả các thuốc.", "error");
-            return; // Nếu chưa chọn đầy đủ, không tiếp tục
+            return;
         }
+
+        const updatedInventoryDetails = inventoryImportDetail.map(detail => {
+            const medicineStr = detail.medicine.toString();
+            const matchingShelf = shelfs.find(item => item.medincineId.toString() === medicineStr);
+            if (!matchingShelf) {
+                console.error(`Không tìm thấy shelf cho sản phẩm ${detail.medicine}`);
+            }
+            return {
+                ...detail,
+                shelfId: matchingShelf?.shelfId,
+            };
+        });
 
         const confirmCancel = window.confirm("Bạn có chắc chắn về xử lý nhập kho này?");
         if (confirmCancel) {
@@ -221,38 +233,39 @@ export const InventoryImportPage = () => {
             // Đổi trạng thái đơn hàng thành IMPORTED
             dispatch(updateInventoryImportStatus({ id: selectedOrder.id, status }))
                 .then(() => {
-                    // dispatch(createInventoryDetail(inventoryImportDetail))
-                    //     .then(() => {
-                    shelfs.forEach(shelf => {
-                        dispatch(updateShelfQuantity({
-                            id: shelf.shelfId,
-                            quantity: shelf.quantity
-                        }))
-                            .then((response) => {
-                                console.log('Cập nhật thành công:', response);
-                            })
-                            .catch((error) => {
-                                console.error('Lỗi khi cập nhật:', error);
+                    // Tạo chi tiết nhập kho
+                    dispatch(createInventoryDetail(updatedInventoryDetails))
+                        .then(() => {
+                            shelfs.forEach(shelf => {
+                                dispatch(updateShelfQuantity({
+                                    id: shelf.shelfId,
+                                    quantity: shelf.quantity
+                                }))
+                                    .then((response) => {
+                                        console.log('Cập nhật thành công:', response);
+                                    })
+                                    .catch((error) => {
+                                        console.error('Lỗi khi cập nhật kệ:', error);
+                                        showToast("Đã có lỗi xảy ra khi cập nhật kệ.", 'error');
+                                    });
                             });
-                    });
+                        })
+                        .catch((error) => {
+                            console.error("Lỗi khi tạo chi tiết nhập kho:", error);
+                            showToast("Đã có lỗi xảy ra khi tạo chi tiết nhập kho.", 'error');
+                        });
                 })
                 .catch((error) => {
-                    console.error("Lỗi khi tạo đơn nhập kho:", error);
-                    showToast("Đã có lỗi xảy ra khi thêm chi tiết kho.", 'error');
+                    console.error("Lỗi khi thay đổi trạng thái đơn nhập kho:", error);
+                    showToast("Đã có lỗi xảy ra khi thay đổi trạng thái đơn nhập kho.", 'error');
                 });
-            showToast('Nhập kho thành công', 'success');
-            closeModal();
-            // })
-            // .catch(() => {
-            //     showToast("Đã có lỗi xảy ra khi thay đổi trạng thái đơn nhâp.", 'error');
-            // });
+                window.location.reload()
+                showToast('Nhập kho thành công', 'success');
+                closeModal();
         }
     };
 
-    // Hàm mở chi tiết kệ
-    const openShelfDetails = (shelf) => {
-        setSelectedShelf(shelf);
-    };
+
 
     // Hàm đóng modal chi tiết kệ
     const closeShelfDetails = () => {
@@ -272,7 +285,7 @@ export const InventoryImportPage = () => {
         setSelectedOrderPurchare(null);
     };
 
-    const handleShelfChange = (e, productId, quantity) => {
+    const handleShelfChange = (e, productId, medicineId, quantity) => {
         const selectedShelfId = e.target.value;
 
         // Cập nhật kệ cho sản phẩm tương ứng
@@ -280,6 +293,7 @@ export const InventoryImportPage = () => {
             ...prevState,
             [productId]: {
                 medicineId: productId,
+                thuocId: medicineId,
                 quantity: quantity,
                 shelfId: selectedShelfId
             }
@@ -424,23 +438,23 @@ export const InventoryImportPage = () => {
                                 <table className="min-w-full table-auto border-collapse">
                                     <thead>
                                         <tr className="bg-gray-100">
-                                            <th className="px-4 py-2 text-left">Mã kệ</th>
-                                            <th className="px-4 py-2 text-left">Vị trí</th>
-                                            <th className="px-4 py-2 text-left">Số lượng sản phẩm</th>
-                                            <th className="px-4 py-2 text-left">Sức chứa</th>
-                                            <th className="px-4 py-2 text-left">Trạng thái</th>
-                                            <th className="px-4 py-2 text-right">Cập nhật</th>
+                                            <th className="border px-4 py-2 text-left">Mã kệ</th>
+                                            <th className="border px-4 py-2 text-left">Vị trí</th>
+                                            <th className="border px-4 py-2 text-left">Số lượng sản phẩm</th>
+                                            <th className="border px-4 py-2 text-left">Sức chứa</th>
+                                            <th className="border px-4 py-2 text-left">Trạng thái</th>
+                                            <th className="border px-4 py-2 text-right">Cập nhật</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {shelves.map(shelf => (
                                             <tr key={shelf.shelf_id}>
-                                                <td className="px-4 py-2">{shelf.id}</td>
-                                                <td className="px-4 py-2">{shelf.location}</td>
-                                                <td className="px-4 py-2">{shelf.totalProduct}</td>
-                                                <td className="px-4 py-2">{shelf.capacity}</td>
-                                                <td className="px-4 py-2">{shelf.status}</td>
-                                                <td className={`px-4 py-2 text-right ${shelf.notes.includes('+') ? 'text-green-500 font-bold' : ''}`}>{shelf.notes}</td>
+                                                <td className="border px-4 py-2">{shelf.id}</td>
+                                                <td className="border px-4 py-2">{shelf.location}</td>
+                                                <td className="border px-4 py-2">{shelf.totalProduct}</td>
+                                                <td className="border px-4 py-2">{shelf.capacity}</td>
+                                                <td className="border px-4 py-2">{shelf.status}</td>
+                                                <td className={`border px-4 py-2 text-right ${shelf.notes.includes('+') ? 'text-green-500 font-bold' : ''}`}>{shelf.notes}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -488,6 +502,7 @@ export const InventoryImportPage = () => {
                                                 Hủy đơn
                                             </button>
 
+                                            
                                             {/* Hiển thị nút chi tiết đơn mua */}
                                             <button
                                                 onClick={() => openOrderDetails(order)}  // Open modal with order details
@@ -606,7 +621,7 @@ export const InventoryImportPage = () => {
                                                         {/* ComboBox chọn kệ */}
                                                         <select
                                                             value={shelfForProduct[product.id]?.shelfId || ''}
-                                                            onChange={(e) => handleShelfChange(e, product.id, product.quantity)}
+                                                            onChange={(e) => handleShelfChange(e, product.id, medicineq.id, product.quantity)}
                                                             className="w-full h-10 max-w-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                         >
                                                             <option value="">Chọn kệ</option>
