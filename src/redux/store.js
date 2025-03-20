@@ -6,9 +6,13 @@ import PurchaseOrderSlice from './slice/PurchaseOrderSlice';
 import PurchaseOrderDetailSlice from './slice/PurchaseOrderDetailSlice';
 import MedicineSlice from './slice/MedicineSlice';
 import ShelfSlice from './slice/ShelfSlice';
+
+import categorySlice from './slice/CategorySlice';
+
 import SupplierSlice from './slice/SupplierSlice';
 import CategorySlice from './slice/CategorySlice';
 import InventoryDetailSlice from './slice/InventoryDetailSlice';
+
 
 const store = configureStore({
     reducer: {
@@ -19,6 +23,9 @@ const store = configureStore({
         purchaseOrderDetail: PurchaseOrderDetailSlice,
         medicine: MedicineSlice,
         shelf: ShelfSlice,
+
+        category: categorySlice,
+
         supplier: SupplierSlice,
         categorys: CategorySlice,
         inventoryDetail: InventoryDetailSlice,
