@@ -7,7 +7,7 @@ import { HomePage } from './pages/HomePage';
 import { DivideCategoryPage } from './pages/DivideCategoryPage';
 import { InventoryLocationPage } from './pages/InventoryLocationPage';
 import { InventoryImportPage } from './pages/InventoryImportPage';
-import { InventoryExportPage } from './pages/InventoryExportPage';
+import { PurchaseOfferPage } from './pages/PurchaseOfferPage';
 import { MedicineLocationPage } from './pages/MedicineLocationPage';
 import { MedicineStatusPage } from './pages/MedicineStatusPage';
 import { ReportPage } from './pages/ReportPage';
@@ -39,7 +39,7 @@ function App() {
         <Route path="/import" element={<InventoryImportPage />} />
 
         //InventoryExport page
-        {/* <Route path="/export" element={<InventoryExportPage />} /> */}
+        <Route path="/purchase-offer" element={<PurchaseOfferPage />} />
 
         //MedicineLocation page
         <Route path="/medicine-location" element={<MedicineLocationPage />} />

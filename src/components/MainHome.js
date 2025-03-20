@@ -4,7 +4,7 @@ import inventoryImage from "../sources/images/kho-hang-slide.png";
 
 export const MainHome = () => {
     return (
-        <div className="flex flex-col h-screen mb-48">
+        <div className="flex flex-col h-screen mb-16">
             {/* Hình ảnh kho phía trên cùng */}
             <div className="bg-cover bg-center h-48" style={{ backgroundImage: `url(${inventoryImage})` }}>
                 <div className="h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -54,20 +54,13 @@ export const MainHome = () => {
                             <h2 className="text-xl font-semibold">Nhân sự</h2>
                         </Link>
 
-                        <Link to="/import" className="block p-6 bg-orange-500 text-white text-center rounded-lg shadow hover:bg-orange-600">
-                            <h2 className="text-xl font-semibold">Đơn nhập</h2>
-                        </Link>
-
-                        <Link to="/export" className="block p-6 bg-red-500 text-white text-center rounded-lg shadow hover:bg-red-600">
-                            <h2 className="text-xl font-semibold">Đơn xuất</h2>
+                        
+                        <Link to="/divide-category-medicine" className="block p-6 bg-purple-500 text-white text-center rounded-lg shadow hover:bg-purple-600">
+                            <h2 className="text-xl font-semibold">Phân loại thuốc</h2>
                         </Link>
 
                         <Link to="/report" className="block p-6 bg-teal-500 text-white text-center rounded-lg shadow hover:bg-teal-600">
                             <h2 className="text-xl font-semibold">Thống kê</h2>
-                        </Link>
-
-                        <Link to="/divide-category-medicine" className="block p-6 bg-purple-500 text-white text-center rounded-lg shadow hover:bg-purple-600">
-                            <h2 className="text-xl font-semibold">Phân loại</h2>
                         </Link>
 
                     </div>

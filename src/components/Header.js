@@ -24,7 +24,7 @@ export const Header = () => {
     };
 
     return (
-        <header className="bg-blue-600 p-6 pl-12 pr-12">
+        <header className="bg-blue-600 p-4 pl-12 pr-12">
             <div className="flex justify-between items-center">
                 <div className="flex items-center ml-0">
                     <img
@@ -125,7 +125,7 @@ export const Header = () => {
                         className="text-white p-2 hover:bg-blue-700 rounded"
                         onClick={() => toggleSubMenu(2)} // Gọi toggle cho submenu Nhập hàng
                     >
-                        Nhập - xuất thuốc
+                        Nhập thuốc
                     </button>
                     {isSubMenuOpen === 2 && (
                         <div className="absolute left-0 mt-2 w-64 bg-white shadow-lg rounded-md">
@@ -139,14 +139,14 @@ export const Header = () => {
                                     </button>
                                 </li>
 
-                                {/* <li>
+                                <li>
                                     <button
                                         className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
-                                        onClick={() => navigate('/export')}
+                                        onClick={() => navigate('/purchase-offer')}
                                     >
-                                        Xuất kho
+                                        Đề nghị mua hàng
                                     </button>
-                                </li> */}
+                                </li>
                             </ul>
                         </div>
                     )}
@@ -176,7 +176,7 @@ export const Header = () => {
                                         className="w-full text-left p-2 text-gray-800 hover:bg-blue-100 rounded"
                                         onClick={() => navigate('/medicine-location')}
                                     >
-                                        Quản lý giá thuốc
+                                        Quản lý vị trí thuốc
                                     </button>
                                 </li>
                             </ul>
