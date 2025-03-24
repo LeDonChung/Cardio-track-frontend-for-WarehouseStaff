@@ -23,7 +23,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export const InventoryImportPage = () => {
     const [activeTab, setActiveTab] = useState('list');
-    const [searchQuery, setSearchQuery] = useState('');
+    const [search, setSearch] = useState("");
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedShelf, setSelectedShelf] = useState(null);
@@ -41,17 +41,6 @@ export const InventoryImportPage = () => {
             setActiveTab(location.state.activeTab);
         }
     }, [location]);
-
-    // Hàm tìm kiếm đơn nhập
-    // const handleSearch = (e) => {
-    //     const query = e.target.value.toLowerCase();
-    //     setSearchQuery(query);
-    //     const result = importOrders.filter(order =>
-    //         order.warehouse.toLowerCase().includes(query)
-    //     );
-    //     setFilteredOrders(result);
-    // };
-
 
     // State để theo dõi trang hiện tại và số lượng item mỗi trang
     const [currentPage, setCurrentPage] = useState(0);
@@ -300,19 +289,6 @@ export const InventoryImportPage = () => {
         }));
     };
 
-    const handleCheckboxChange = () => {
-        setIsChecked(!isChecked);
-    
-        if (!isChecked) {
-          // Nếu checkbox được chọn, chỉ hiển thị đơn chưa xử lý
-          inventoryImport.filter(order => order.status === 'chưa xử lý');
-        } 
-        // else {
-        //   // Nếu checkbox bỏ chọn, hiển thị lại tất cả đơn hàng
-        //   setFilteredOrders(inventoryImport);
-        // }
-      };
-
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
     if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có
@@ -353,23 +329,22 @@ export const InventoryImportPage = () => {
 
                             {/* Tìm kiếm đơn nhập */}
                             <div className="mb-4 flex items-center">
-                                {/* <input
-                                    type="text"
-                                    placeholder="Tìm kiếm theo tên nhà cung cấp..."
-                                    value={searchQuery}
-                                    onChange={handleSearch}
-                                    className="p-2 border border-gray-300 rounded-md w-1/2"
-                                /> */}
-                            </div>
-
-                            <label>
                                 <input
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={handleCheckboxChange}
+                                    type="text"
+                                    placeholder="Tìm kiếm theo mã đơn hoặc tên nhà cung cấp..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="p-2 border border-gray-300 rounded-md w-1/2"
                                 />
-                                Hiển thị đơn đang xử lý
-                            </label>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => setIsChecked(!isChecked)}
+                                    />
+                                    Hiển thị đơn đang xử lý
+                                </label>
+                            </div>
 
                             {/* Bảng danh sách đơn nhập */}
                             <table className="min-w-full table-auto border-collapse border border-gray-300">
@@ -388,36 +363,34 @@ export const InventoryImportPage = () => {
                                 <tbody>
                                     {inventoryImport.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center py-4">Không có đơn nhập nào</td>
+                                            <td colSpan="6" className="text-center py-4">Không có đơn nào</td>
                                         </tr>
                                     ) : (
-                                        inventoryImport.map(order => (
-                                            <tr key={order.id}>
-                                                <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
-                                                <td className="border px-4 py-2">{order.id}</td>
-                                                <td className="border px-4 py-2">{order.supplierName}</td>
-                                                <td className="border px-4 py-2">{order.status}</td>
-                                                <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
-                                                <td className="border px-4 py-2">{order.recipient}</td>
-                                                <td className="border px-4 py-2">{order.notes}</td>
-                                                <td className="border px-4 py-2 text-right">
-                                                    {order.status === "PENDING" && (
-                                                        <button
-                                                            onClick={() => openModalImport(order)}
-                                                            className="bg-red-500 text-white px-4 py-2 rounded-md"
-                                                        >
-                                                            Tiến hành nhập
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => openModal(order)}
-                                                        className="bg-green-500 text-white px-4 py-2 rounded-md ml-4"
-                                                    >
-                                                        Xem chi tiết
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        inventoryImport.filter(o =>
+                                            o.supplierName.toLowerCase().includes(search.toLowerCase()) ||
+                                            o.id.toString() === search)
+                                            // inventoryImport
+                                            .map(order => (
+                                                <tr className="hover:bg-gray-200 cursor-pointer" key={order.id} onClick={() => openModal(order)}>
+                                                    <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
+                                                    <td className="border px-4 py-2">{order.id}</td>
+                                                    <td className="border px-4 py-2">{order.supplierName}</td>
+                                                    <td className="border px-4 py-2">{order.status}</td>
+                                                    <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
+                                                    <td className="border px-4 py-2">{order.recipient}</td>
+                                                    <td className="border px-4 py-2">{order.notes}</td>
+                                                    <td className="border px-4 py-2 text-right">
+                                                        {order.status === "PENDING" && (
+                                                            <button
+                                                                onClick={() => openModalImport(order)}
+                                                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                                            >
+                                                                Tiến hành nhập
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
                                     )}
                                 </tbody>
                             </table>
@@ -494,7 +467,7 @@ export const InventoryImportPage = () => {
                                     <div>Không có đơn mua lô thuốc nào.</div>
                                 ) : (
                                     purchaseOrderByPendingStatus.map((order, index) => (
-                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50">
+                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50 cursor-pointer hover:bg-gray-200" onClick={() => openOrderDetails(order)}>
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">Mã đơn: {order.id}</span>
                                                 <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
@@ -524,12 +497,12 @@ export const InventoryImportPage = () => {
 
 
                                             {/* Hiển thị nút chi tiết đơn mua */}
-                                            <button
+                                            {/* <button
                                                 onClick={() => openOrderDetails(order)}  // Open modal with order details
                                                 className="bg-yellow-500 text-white px-4 py-2 rounded-md ml-2"
                                             >
                                                 Xem chi tiết
-                                            </button>
+                                            </button> */}
                                         </div>
                                     ))
                                 )}
