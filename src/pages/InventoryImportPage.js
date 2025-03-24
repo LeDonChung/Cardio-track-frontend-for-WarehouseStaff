@@ -24,7 +24,6 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 export const InventoryImportPage = () => {
     const [activeTab, setActiveTab] = useState('list');
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredOrders, setFilteredOrders] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedShelf, setSelectedShelf] = useState(null);
@@ -32,6 +31,7 @@ export const InventoryImportPage = () => {
     const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [shelfForProduct, setShelfForProduct] = useState({});
+    const [isChecked, setIsChecked] = useState(false);
 
     const dispatch = useDispatch();
     const location = useLocation();
@@ -259,9 +259,9 @@ export const InventoryImportPage = () => {
                     console.error("Lỗi khi thay đổi trạng thái đơn nhập kho:", error);
                     showToast("Đã có lỗi xảy ra khi thay đổi trạng thái đơn nhập kho.", 'error');
                 });
-                window.location.reload()
-                showToast('Nhập kho thành công', 'success');
-                closeModal();
+            window.location.reload()
+            showToast('Nhập kho thành công', 'success');
+            closeModal();
         }
     };
 
@@ -299,6 +299,19 @@ export const InventoryImportPage = () => {
             }
         }));
     };
+
+    const handleCheckboxChange = () => {
+        setIsChecked(!isChecked);
+    
+        if (!isChecked) {
+          // Nếu checkbox được chọn, chỉ hiển thị đơn chưa xử lý
+          inventoryImport.filter(order => order.status === 'chưa xử lý');
+        } 
+        // else {
+        //   // Nếu checkbox bỏ chọn, hiển thị lại tất cả đơn hàng
+        //   setFilteredOrders(inventoryImport);
+        // }
+      };
 
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
@@ -342,12 +355,21 @@ export const InventoryImportPage = () => {
                             <div className="mb-4 flex items-center">
                                 {/* <input
                                     type="text"
-                                    placeholder="Tìm kiếm theo tên kho..."
+                                    placeholder="Tìm kiếm theo tên nhà cung cấp..."
                                     value={searchQuery}
                                     onChange={handleSearch}
                                     className="p-2 border border-gray-300 rounded-md w-1/2"
                                 /> */}
                             </div>
+
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={handleCheckboxChange}
+                                />
+                                Hiển thị đơn đang xử lý
+                            </label>
 
                             {/* Bảng danh sách đơn nhập */}
                             <table className="min-w-full table-auto border-collapse border border-gray-300">
@@ -356,7 +378,6 @@ export const InventoryImportPage = () => {
                                         <th className="border px-4 py-2 text-left">Số thứ tự</th>
                                         <th className="border px-4 py-2 text-left">Mã đơn</th>
                                         <th className="border px-4 py-2 text-left">Nhà cung cấp</th>
-                                        <th className="border px-4 py-2 text-left">Kho</th>
                                         <th className="border px-4 py-2 text-left">Tình trạng</th>
                                         <th className="border px-4 py-2 text-left">Ngày nhập</th>
                                         <th className="border px-4 py-2 text-left">Người phụ trách</th>
@@ -374,8 +395,7 @@ export const InventoryImportPage = () => {
                                             <tr key={order.id}>
                                                 <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
                                                 <td className="border px-4 py-2">{order.id}</td>
-                                                <td className="border px-4 py-2">{order.supplier}</td>
-                                                <td className="border px-4 py-2">{order.inventory}</td>
+                                                <td className="border px-4 py-2">{order.supplierName}</td>
                                                 <td className="border px-4 py-2">{order.status}</td>
                                                 <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
                                                 <td className="border px-4 py-2">{order.recipient}</td>
@@ -502,7 +522,7 @@ export const InventoryImportPage = () => {
                                                 Hủy đơn
                                             </button>
 
-                                            
+
                                             {/* Hiển thị nút chi tiết đơn mua */}
                                             <button
                                                 onClick={() => openOrderDetails(order)}  // Open modal with order details

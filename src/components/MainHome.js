@@ -1,22 +1,35 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import inventoryImage from "../sources/images/kho-hang-slide.png";
 import { useNavigate } from 'react-router-dom';
+import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; 
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
 
 export const MainHome = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
     const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
 
-     useEffect(() => {
-            dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
-        }, [purchaseOrderByPendingStatus]);
+    useEffect(() => {
+        dispatch(fetchInventoryImports({ page: 0, size: 1000, sortBy: 'importDate', sortName: 'desc' }));
+    }, [dispatch]);
+
+    useEffect(() => {
+        dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
+    }, [purchaseOrderByPendingStatus]);
+
+     // Tính tổng số lượng đơn nhập có status là 'PENDING'
+     const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;
+
+    const handleInventoryPending = (e) => {
+        navigate('/import', { state: { activeTab: 'list' } });
+    };
 
     const handlePurchasePending = (e) => {
-        navigate('/import', { state: { activeTab: 'purchare-order' } }); 
+        navigate('/import', { state: { activeTab: 'purchare-order' } });
     };
 
     return (
@@ -43,9 +56,9 @@ export const MainHome = () => {
                             <h2 className="text-lg font-semibold">Thuốc sắp hết hạn</h2>
                             <p className="text-2xl text-red-600">15</p>
                         </div>
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleInventoryPending} >
                             <h2 className="text-lg font-semibold">Lô hàng chờ nhập</h2>
-                            <p className="text-2xl text-green-600">3</p>
+                            <p className="text-2xl text-green-600">{pendingInventoryCount}</p>
                         </div>
                     </div>
 
