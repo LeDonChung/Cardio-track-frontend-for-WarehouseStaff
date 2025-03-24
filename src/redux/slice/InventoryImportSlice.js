@@ -63,6 +63,20 @@ export const updateInventoryImportStatus = createAsyncThunk(
     }
 );
 
+// Lấy đơn nhập theo trạng thái chờ xác nhận
+export const fetchInventoryImportsByPendingStatus = createAsyncThunk(
+    'inventoryImport/fetchInventoryImportsByPendingStatus',
+    async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/api/v1/inventory-import/pending`, {
+                params: { page, size, sortBy, sortName }
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const inventoryImportSlice = createSlice({
     name: 'inventoryImport',
@@ -106,6 +120,17 @@ const inventoryImportSlice = createSlice({
                     order => order.id !== action.payload.id
                 );
 
+            })
+            .addCase(fetchInventoryImportsByPendingStatus.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchInventoryImportsByPendingStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                state.inventoryImport = action.payload.data; // Lưu chi tiết đơn nhập vào state
+            })
+            .addCase(fetchInventoryImportsByPendingStatus.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload; // Lỗi khi lấy chi tiết đơn nhập
             });
 
     },

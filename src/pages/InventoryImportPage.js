@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import { fetchInventoryImportsByPendingStatus } from '../redux/slice/InventoryImportSlice';
 import { createInventoryImport } from '../redux/slice/InventoryImportSlice';
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
@@ -31,7 +32,7 @@ export const InventoryImportPage = () => {
     const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [shelfForProduct, setShelfForProduct] = useState({});
-    const [isChecked, setIsChecked] = useState(false);
+    const [isChecked, setIsChecked] = useState("all");
 
     const dispatch = useDispatch();
     const location = useLocation();
@@ -59,8 +60,12 @@ export const InventoryImportPage = () => {
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
-        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
-    }, [dispatch, currentPage]);
+        if(isChecked === 'all') {
+            dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+        } else if(isChecked === 'pending') {
+            dispatch(fetchInventoryImportsByPendingStatus({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+        }
+    }, [dispatch, currentPage, isChecked]);
 
     useEffect(() => {
         if (activeTab === 'purchare-order') {
@@ -328,7 +333,7 @@ export const InventoryImportPage = () => {
                             <h3 className="font-bold text-lg mb-2">Danh sách đơn nhập</h3>
 
                             {/* Tìm kiếm đơn nhập */}
-                            <div className="mb-4 flex items-center">
+                            <div className="mb-4 flex justify-between">
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm theo mã đơn hoặc tên nhà cung cấp..."
@@ -336,14 +341,29 @@ export const InventoryImportPage = () => {
                                     onChange={(e) => setSearch(e.target.value)}
                                     className="p-2 border border-gray-300 rounded-md w-1/2"
                                 />
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={isChecked}
-                                        onChange={() => setIsChecked(!isChecked)}
-                                    />
-                                    Hiển thị đơn đang xử lý
-                                </label>
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="orderFilter"
+                                            checked={isChecked === 'all'}
+                                            onChange={() => setIsChecked('all')}
+                                            className="mr-1"
+                                        />
+                                        Tất cả
+                                    </label>
+
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="orderFilter"
+                                            checked={isChecked === 'pending'}
+                                            onChange={() => setIsChecked('pending')}
+                                            className="mr-1"
+                                        />
+                                        Đơn đang xử lý
+                                    </label>
+                                </div>
                             </div>
 
                             {/* Bảng danh sách đơn nhập */}
