@@ -34,33 +34,6 @@ export const getMedicinesByCategory = createAsyncThunk(
   );
 
 
-
-  const categorySlice = createSlice({
-    name: "category",
-    initialState: { categories: [], medicinesByCategory: [], totalPages: 1 },
-    reducers: {},
-    extraReducers: (builder) => {
-        builder
-          .addCase(fetchCategories.fulfilled, (state, action) => {
-            state.categories = action.payload?.data || []; 
-            state.totalPages = action.payload?.totalPages;
-          })
-          .addCase(getMedicinesByCategory.fulfilled, (state, action) => {
-            console.log("Redux Medicines:", action.payload);
-            state.medicinesByCategory = action.payload?.data || []; 
-          })
-          .addCase(getMedicinesByCategory.rejected, (state, action) => {
-            state.medicinesByCategory = []; 
-          });
-    },
-});
-
-
-
-export default categorySlice.reducer;
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { axiosInstance } from "../../api/APIClient";
-
 export const fetchCategorys = createAsyncThunk(
     "category/fetchfetchCategorys",
     async ({ rejectWithValue }) => {
@@ -115,6 +88,18 @@ const categorySlice = createSlice({
                 state.categorys.push(newCategory);
             }
         });
+        builder
+          .addCase(fetchCategories.fulfilled, (state, action) => {
+            state.categories = action.payload?.data || []; 
+            state.totalPages = action.payload?.totalPages;
+          })
+          .addCase(getMedicinesByCategory.fulfilled, (state, action) => {
+            console.log("Redux Medicines:", action.payload);
+            state.medicinesByCategory = action.payload?.data || []; 
+          })
+          .addCase(getMedicinesByCategory.rejected, (state, action) => {
+            state.medicinesByCategory = []; 
+          });
     },
 });
 
