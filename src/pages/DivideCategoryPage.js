@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 export const DivideCategoryPage = () => {
   const dispatch = useDispatch();
-  const categories = useSelector((state) => state.category.categories) || [];
+  const categorys = useSelector((state) => state.category.categorys) || [];
   const medicinesByCategory =
     useSelector((state) => state.category.medicinesByCategory) || [];
 
@@ -39,7 +39,7 @@ export const DivideCategoryPage = () => {
   };
 
   const handleNext = () => {
-    if (currentIndex + 10 < categories.length) {
+    if (currentIndex + 10 < categorys.length) {
       setCurrentIndex((prev) => prev + 10);
     }
   };
@@ -50,7 +50,7 @@ export const DivideCategoryPage = () => {
     }
   };
 
-  const displayedCategories = categories.slice(currentIndex, currentIndex + 10);
+  const displayedCategories = categorys.slice(currentIndex, currentIndex + 10);
 
   return (
     <div className="bg-white text-gray-900">
@@ -94,9 +94,9 @@ export const DivideCategoryPage = () => {
           {/* Nút Tiếp */}
           <button
             onClick={handleNext}
-            disabled={currentIndex + 10 >= categories.length}
+            disabled={currentIndex + 10 >= categorys.length}
             className={`p-2 border rounded-lg ${
-              currentIndex + 10 >= categories.length
+              currentIndex + 10 >= categorys.length
                 ? "bg-gray-300 cursor-not-allowed"
                 : "bg-blue-500 text-white"
             }`}

@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../api/APIClient";
 
 export const fetchCategories = createAsyncThunk(
-    "category/fetchCategories",
+    "category/fetchCategoriess",
     async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get("/api/v1/category", {
@@ -35,7 +35,7 @@ export const getMedicinesByCategory = createAsyncThunk(
 
 
 export const fetchCategorys = createAsyncThunk(
-    "category/fetchfetchCategorys",
+    "category/fetchfetchCategory",
     async ({ rejectWithValue }) => {
         try {
             const response = await axiosInstance.get(`/api/v1/category/get-all`);
@@ -90,7 +90,7 @@ const categorySlice = createSlice({
         });
         builder
           .addCase(fetchCategories.fulfilled, (state, action) => {
-            state.categories = action.payload?.data || []; 
+            state.categorys = action.payload?.data || []; 
             state.totalPages = action.payload?.totalPages;
           })
           .addCase(getMedicinesByCategory.fulfilled, (state, action) => {
