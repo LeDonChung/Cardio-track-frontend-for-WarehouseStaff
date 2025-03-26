@@ -3,6 +3,7 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
+import { fetchInventoryImportsByPendingStatus } from '../redux/slice/InventoryImportSlice';
 import { createInventoryImport } from '../redux/slice/InventoryImportSlice';
 import { fetchInventoryImportById } from '../redux/slice/InventoryImportDetailSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
@@ -23,8 +24,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 export const InventoryImportPage = () => {
     const [activeTab, setActiveTab] = useState('list');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredOrders, setFilteredOrders] = useState([]);
+    const [search, setSearch] = useState("");
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedShelf, setSelectedShelf] = useState(null);
@@ -32,6 +32,7 @@ export const InventoryImportPage = () => {
     const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [shelfForProduct, setShelfForProduct] = useState({});
+    const [isChecked, setIsChecked] = useState("all");
 
     const dispatch = useDispatch();
     const location = useLocation();
@@ -41,17 +42,6 @@ export const InventoryImportPage = () => {
             setActiveTab(location.state.activeTab);
         }
     }, [location]);
-
-    // Hàm tìm kiếm đơn nhập
-    // const handleSearch = (e) => {
-    //     const query = e.target.value.toLowerCase();
-    //     setSearchQuery(query);
-    //     const result = importOrders.filter(order =>
-    //         order.warehouse.toLowerCase().includes(query)
-    //     );
-    //     setFilteredOrders(result);
-    // };
-
 
     // State để theo dõi trang hiện tại và số lượng item mỗi trang
     const [currentPage, setCurrentPage] = useState(0);
@@ -70,8 +60,12 @@ export const InventoryImportPage = () => {
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
-        dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
-    }, [dispatch, currentPage]);
+        if(isChecked === 'all') {
+            dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+        } else if(isChecked === 'pending') {
+            dispatch(fetchInventoryImportsByPendingStatus({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+        }
+    }, [dispatch, currentPage, isChecked]);
 
     useEffect(() => {
         if (activeTab === 'purchare-order') {
@@ -259,9 +253,9 @@ export const InventoryImportPage = () => {
                     console.error("Lỗi khi thay đổi trạng thái đơn nhập kho:", error);
                     showToast("Đã có lỗi xảy ra khi thay đổi trạng thái đơn nhập kho.", 'error');
                 });
-                window.location.reload()
-                showToast('Nhập kho thành công', 'success');
-                closeModal();
+            window.location.reload()
+            showToast('Nhập kho thành công', 'success');
+            closeModal();
         }
     };
 
@@ -339,14 +333,37 @@ export const InventoryImportPage = () => {
                             <h3 className="font-bold text-lg mb-2">Danh sách đơn nhập</h3>
 
                             {/* Tìm kiếm đơn nhập */}
-                            <div className="mb-4 flex items-center">
-                                {/* <input
+                            <div className="mb-4 flex justify-between">
+                                <input
                                     type="text"
-                                    placeholder="Tìm kiếm theo tên kho..."
-                                    value={searchQuery}
-                                    onChange={handleSearch}
+                                    placeholder="Tìm kiếm theo mã đơn hoặc tên nhà cung cấp..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
                                     className="p-2 border border-gray-300 rounded-md w-1/2"
-                                /> */}
+                                />
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="orderFilter"
+                                            checked={isChecked === 'all'}
+                                            onChange={() => setIsChecked('all')}
+                                            className="mr-1"
+                                        />
+                                        Tất cả
+                                    </label>
+
+                                    <label className="flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="orderFilter"
+                                            checked={isChecked === 'pending'}
+                                            onChange={() => setIsChecked('pending')}
+                                            className="mr-1"
+                                        />
+                                        Đơn đang xử lý
+                                    </label>
+                                </div>
                             </div>
 
                             {/* Bảng danh sách đơn nhập */}
@@ -356,7 +373,6 @@ export const InventoryImportPage = () => {
                                         <th className="border px-4 py-2 text-left">Số thứ tự</th>
                                         <th className="border px-4 py-2 text-left">Mã đơn</th>
                                         <th className="border px-4 py-2 text-left">Nhà cung cấp</th>
-                                        <th className="border px-4 py-2 text-left">Kho</th>
                                         <th className="border px-4 py-2 text-left">Tình trạng</th>
                                         <th className="border px-4 py-2 text-left">Ngày nhập</th>
                                         <th className="border px-4 py-2 text-left">Người phụ trách</th>
@@ -367,37 +383,34 @@ export const InventoryImportPage = () => {
                                 <tbody>
                                     {inventoryImport.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="text-center py-4">Không có đơn nhập nào</td>
+                                            <td colSpan="6" className="text-center py-4">Không có đơn nào</td>
                                         </tr>
                                     ) : (
-                                        inventoryImport.map(order => (
-                                            <tr key={order.id}>
-                                                <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
-                                                <td className="border px-4 py-2">{order.id}</td>
-                                                <td className="border px-4 py-2">{order.supplier}</td>
-                                                <td className="border px-4 py-2">{order.inventory}</td>
-                                                <td className="border px-4 py-2">{order.status}</td>
-                                                <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
-                                                <td className="border px-4 py-2">{order.recipient}</td>
-                                                <td className="border px-4 py-2">{order.notes}</td>
-                                                <td className="border px-4 py-2 text-right">
-                                                    {order.status === "PENDING" && (
-                                                        <button
-                                                            onClick={() => openModalImport(order)}
-                                                            className="bg-red-500 text-white px-4 py-2 rounded-md"
-                                                        >
-                                                            Tiến hành nhập
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => openModal(order)}
-                                                        className="bg-green-500 text-white px-4 py-2 rounded-md ml-4"
-                                                    >
-                                                        Xem chi tiết
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        inventoryImport.filter(o =>
+                                            o.supplierName.toLowerCase().includes(search.toLowerCase()) ||
+                                            o.id.toString() === search)
+                                            // inventoryImport
+                                            .map(order => (
+                                                <tr className="hover:bg-gray-200 cursor-pointer" key={order.id} onClick={() => openModal(order)}>
+                                                    <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
+                                                    <td className="border px-4 py-2">{order.id}</td>
+                                                    <td className="border px-4 py-2">{order.supplierName}</td>
+                                                    <td className="border px-4 py-2">{order.status}</td>
+                                                    <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
+                                                    <td className="border px-4 py-2">{order.recipient}</td>
+                                                    <td className="border px-4 py-2">{order.notes}</td>
+                                                    <td className="border px-4 py-2 text-right">
+                                                        {order.status === "PENDING" && (
+                                                            <button
+                                                                onClick={() => openModalImport(order)}
+                                                                className="bg-red-500 text-white px-4 py-2 rounded-md"
+                                                            >
+                                                                Tiến hành nhập
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
                                     )}
                                 </tbody>
                             </table>
@@ -474,7 +487,7 @@ export const InventoryImportPage = () => {
                                     <div>Không có đơn mua lô thuốc nào.</div>
                                 ) : (
                                     purchaseOrderByPendingStatus.map((order, index) => (
-                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50">
+                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50 cursor-pointer hover:bg-gray-200" onClick={() => openOrderDetails(order)}>
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-semibold">Mã đơn: {order.id}</span>
                                                 <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
@@ -502,14 +515,14 @@ export const InventoryImportPage = () => {
                                                 Hủy đơn
                                             </button>
 
-                                            
+
                                             {/* Hiển thị nút chi tiết đơn mua */}
-                                            <button
+                                            {/* <button
                                                 onClick={() => openOrderDetails(order)}  // Open modal with order details
                                                 className="bg-yellow-500 text-white px-4 py-2 rounded-md ml-2"
                                             >
                                                 Xem chi tiết
-                                            </button>
+                                            </button> */}
                                         </div>
                                     ))
                                 )}

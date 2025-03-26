@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 export const Header = () => {
     const [isSubMenuOpen, setIsSubMenuOpen] = useState(null); // Quản lý trạng thái của submenu
+    const user = JSON.parse(localStorage.getItem('userInfo'));
     const navigate = useNavigate();
 
     const handlerActionLogout = () => {
@@ -54,14 +55,24 @@ export const Header = () => {
                 {/* Menu đăng nhập/đăng xuất */}
                 <div className="ml-auto">
                     {localStorage.getItem('token') ? (
-                        <button className="text-white flex justify-between items-center" onClick={handlerActionLogout}>
-                            <img
-                                src="/icon/ic_user.png"
-                                alt="User Icon"
-                                className="h-10 w-10 mx-1"
-                            />
-                            Đăng xuất
-                        </button>
+                        <div>
+                            <a className="text-white flex justify-between items-center" href='/user'>
+                                <img
+                                    src="/icon/ic_user.png"
+                                    alt="Thera Care Logo"
+                                    className="h-10 w-10 mx-1"
+                                />
+                                {user.fullName}
+                            </a>
+                            <button className="text-white flex justify-between items-center" onClick={handlerActionLogout}>
+                                <img
+                                    src="/icon/ic_user.png"
+                                    alt="User Icon"
+                                    className="h-10 w-10 mx-1"
+                                />
+                                Đăng xuất
+                            </button>
+                        </div>
                     ) : (
                         <button className="text-white flex justify-between items-center" onClick={() => navigate('/login')}>
                             <img

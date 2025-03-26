@@ -1,10 +1,39 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import inventoryImage from "../sources/images/kho-hang-slide.png";
+import { useNavigate } from 'react-router-dom';
+import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; 
+import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
 
 export const MainHome = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
+    const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
+
+    useEffect(() => {
+        dispatch(fetchInventoryImports({ page: 0, size: 1000, sortBy: 'importDate', sortName: 'desc' }));
+    }, [dispatch]);
+
+    useEffect(() => {
+        dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
+    }, [purchaseOrderByPendingStatus]);
+
+     // Tính tổng số lượng đơn nhập có status là 'PENDING'
+     const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;
+
+    const handleInventoryPending = (e) => {
+        navigate('/import', { state: { activeTab: 'list' } });
+    };
+
+    const handlePurchasePending = (e) => {
+        navigate('/import', { state: { activeTab: 'purchare-order' } });
+    };
+
     return (
-        <div className="flex flex-col h-screen mb-16">
+        <div className="flex flex-col h-screen mb-32">
             {/* Hình ảnh kho phía trên cùng */}
             <div className="bg-cover bg-center h-48" style={{ backgroundImage: `url(${inventoryImage})` }}>
                 <div className="h-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -27,16 +56,16 @@ export const MainHome = () => {
                             <h2 className="text-lg font-semibold">Thuốc sắp hết hạn</h2>
                             <p className="text-2xl text-red-600">15</p>
                         </div>
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleInventoryPending} >
                             <h2 className="text-lg font-semibold">Lô hàng chờ nhập</h2>
-                            <p className="text-2xl text-green-600">3</p>
+                            <p className="text-2xl text-green-600">{pendingInventoryCount}</p>
                         </div>
                     </div>
 
                     <div className="mt-6 grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handlePurchasePending}>
                             <h2 className="text-lg font-semibold">Đơn hàng chờ xử lý</h2>
-                            <p className="text-2xl text-orange-600">8</p>
+                            <p className="text-2xl text-orange-600">{purchaseOrderByPendingStatus.length}</p>
                         </div>
                         <div className="p-4 bg-white shadow rounded-lg">
                             <h2 className="text-lg font-semibold">Tỷ lệ thuốc hỏng</h2>
@@ -54,7 +83,7 @@ export const MainHome = () => {
                             <h2 className="text-xl font-semibold">Nhân sự</h2>
                         </Link>
 
-                        
+
                         <Link to="/divide-category-medicine" className="block p-6 bg-purple-500 text-white text-center rounded-lg shadow hover:bg-purple-600">
                             <h2 className="text-xl font-semibold">Phân loại thuốc</h2>
                         </Link>

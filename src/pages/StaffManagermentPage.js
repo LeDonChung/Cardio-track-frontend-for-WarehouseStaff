@@ -53,7 +53,6 @@ export const StaffManagermentPage = () => {
                                 <th className="px-4 py-2 text-left">Tên nhân viên</th>
                                 <th className="px-4 py-2 text-left">Vai trò</th>
                                 <th className="px-4 py-2 text-left">Trạng thái</th>
-                                <th className="px-4 py-2 text-left">Kho hàng làm việc</th>
                                 <th className="px-4 py-2 text-left">Thông tin chi tiết</th>
                                 <th className="px-4 py-2 text-left">Thao tác</th>
                             </tr>
@@ -67,7 +66,6 @@ export const StaffManagermentPage = () => {
                                     <td className="px-4 py-2">{employee.name}</td>
                                     <td className="px-4 py-2">{employee.role}</td>
                                     <td className="px-4 py-2">{employee.status}</td>
-                                    <td className="px-4 py-2">{employee.inventory}</td>
                                     <td className="px-4 py-2">
                                         <button
                                             onClick={() => handleSelectEmployee(employee)}
