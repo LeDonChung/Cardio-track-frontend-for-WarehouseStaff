@@ -263,6 +263,25 @@ export const InventoryImportPage = () => {
         }
     };
 
+    // Hàm từ chối nhập
+    const openModalImportCancel = (order, event) => {
+        event.stopPropagation();
+        const confirmCancel = window.confirm("Bạn có chắc chắn muốn từ chối đơn nhập này?");
+        if (confirmCancel) {
+            const status = "CANCELLED";
+
+            // Đổi trạng thái đơn nhập thành CANCELLED
+            dispatch(updateInventoryImportStatus({ id: order.id, status }))
+                .then(() => {
+                    // Sau khi hủy thành công, tải lại danh sách đơn hàng
+                    dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
+                    showToast("Đơn nhập đã bị hủy.", 'success');
+                })
+                .catch(() => {
+                    showToast("Đã có lỗi xảy ra khi hủy đơn.", 'error');
+                });
+        }
+    };
 
 
     // Hàm đóng modal chi tiết kệ
@@ -422,12 +441,21 @@ export const InventoryImportPage = () => {
                                                     <td className="border px-4 py-2">{order.notes}</td>
                                                     <td className="border px-4 py-2 text-right">
                                                         {order.status === "PENDING" && (
-                                                            <button
-                                                                onClick={(event) => openModalImport(order, event)}
-                                                                className="bg-red-500 text-white px-4 py-2 rounded-md"
-                                                            >
-                                                                Tiến hành nhập
-                                                            </button>
+                                                            <div>
+                                                                <button
+                                                                    onClick={(event) => openModalImport(order, event)}
+                                                                    className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                                                                >
+                                                                    Tiến hành nhập
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={(event) => openModalImportCancel(order, event)}
+                                                                    className="bg-red-500 text-white px-4 py-2 rounded-md ml-2"
+                                                                >
+                                                                    Từ chối
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </td>
                                                 </tr>
@@ -738,7 +766,7 @@ export const InventoryImportPage = () => {
                                                     <td className="border px-4 py-2">{product.quantity}</td>
                                                     <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
                                                     <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
-                                                    <td className="border px-4 py-2">{formattedExpirationDate}</td> 
+                                                    <td className="border px-4 py-2">{formattedExpirationDate}</td>
                                                 </tr>
                                             );
                                         })
