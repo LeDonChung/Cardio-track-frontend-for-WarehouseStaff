@@ -392,14 +392,31 @@ export const InventoryImportPage = () => {
                                     ) : (
                                         inventoryImport.filter(o =>
                                             o.supplierName.toLowerCase().includes(search.toLowerCase()) ||
-                                            o.id.toString() === search)
-                                            // inventoryImport
-                                            .map(order => (
+                                            o.id.toString() === search
+                                        ).map(order => {
+                                            // Xử lý hiển thị status
+                                            let statusLabel = "";
+                                            switch (order.status) {
+                                                case "PENDING":
+                                                    statusLabel = "Đang xử lý";
+                                                    break;
+                                                case "IMPORTED":
+                                                    statusLabel = "Đã nhập";
+                                                    break;
+                                                case "CANCELLED":
+                                                    statusLabel = "Đã hủy";
+                                                    break;
+                                                default:
+                                                    statusLabel = "Không xác định";
+                                                    break;
+                                            }
+
+                                            return (
                                                 <tr className="hover:bg-gray-200 cursor-pointer" key={order.id} onClick={() => openModal(order)}>
                                                     <td className="border px-4 py-2">{inventoryImport.indexOf(order) + 1}</td>
                                                     <td className="border px-4 py-2">{order.id}</td>
                                                     <td className="border px-4 py-2">{order.supplierName}</td>
-                                                    <td className="border px-4 py-2">{order.status}</td>
+                                                    <td className="border px-4 py-2">{statusLabel}</td> {/* Hiển thị statusLabel */}
                                                     <td className="border px-4 py-2">{new Date(order.importDate).toLocaleDateString()}</td>
                                                     <td className="border px-4 py-2">{order.recipient}</td>
                                                     <td className="border px-4 py-2">{order.notes}</td>
@@ -414,7 +431,9 @@ export const InventoryImportPage = () => {
                                                         )}
                                                     </td>
                                                 </tr>
-                                            ))
+                                            );
+                                        })
+
                                     )}
                                 </tbody>
                             </table>
@@ -493,7 +512,7 @@ export const InventoryImportPage = () => {
                                     purchaseOrderByPendingStatus.map((order, index) => {
                                         // Chuyển đổi ngày giờ từ UTC sang múi giờ VN (UTC+7)
                                         const orderDateVN = new Date(order.orderDate).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
-                                    
+
                                         return (
                                             <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50 cursor-pointer hover:bg-gray-200" onClick={() => openOrderDetails(order)}>
                                                 <div className="flex justify-between mb-2">
@@ -506,7 +525,7 @@ export const InventoryImportPage = () => {
                                                 <div className="mb-2">
                                                     <strong>Tình trạng:</strong> Đang xử lý - {order.status}
                                                 </div>
-                                    
+
                                                 {/* Nút nhập vào kho */}
                                                 <button
                                                     onClick={(event) => importToWarehouse(order, event)}
@@ -514,7 +533,7 @@ export const InventoryImportPage = () => {
                                                 >
                                                     Xác nhận đơn mua
                                                 </button>
-                                    
+
                                                 {/* Nút hủy đơn */}
                                                 <button
                                                     onClick={(event) => handleCancelOrder(order.id, event)}
@@ -565,6 +584,10 @@ export const InventoryImportPage = () => {
                                         inventoryImportDetail.map((product, index) => {
                                             const medicineq = medicines.find(med => med.id === product.medicine);
                                             const category = categorys.find(cat => cat.id === product.category);
+
+                                            const expirationDate = new Date(product.expirationDate);
+                                            const vietnamTime = expirationDate.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+
                                             return (
                                                 <tr key={product.id}>
                                                     <td className="border px-4 py-2">{product.inventoryImportId}</td>
@@ -573,11 +596,12 @@ export const InventoryImportPage = () => {
                                                     <td className="border px-4 py-2">{product.quantity}</td>
                                                     <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
                                                     <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
-                                                    <td className="border px-4 py-2">{product.expirationDate}</td>
+                                                    <td className="border px-4 py-2">{vietnamTime}</td>
                                                 </tr>
                                             );
                                         })
                                     )}
+
                                 </tbody>
 
                             </table>
@@ -703,15 +727,21 @@ export const InventoryImportPage = () => {
                                             <td colSpan="5" className="px-4 py-2 text-center">Không có sản phẩm</td>
                                         </tr>
                                     ) : (
-                                        purchaseOrderDetail.map((product) => (
-                                            <tr key={product.id}>
-                                                <td className="border px-4 py-2">{product.medicine}</td>
-                                                <td className="border px-4 py-2">{product.quantity}</td>
-                                                <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
-                                                <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
-                                                <td className="border px-4 py-2">{product.expirationDate}</td>
-                                            </tr>
-                                        ))
+                                        purchaseOrderDetail.map((product) => {
+
+                                            const expirationDate = new Date(product.expirationDate);
+                                            const formattedExpirationDate = expirationDate.toLocaleDateString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+
+                                            return (
+                                                <tr key={product.id}>
+                                                    <td className="border px-4 py-2">{product.medicine}</td>
+                                                    <td className="border px-4 py-2">{product.quantity}</td>
+                                                    <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
+                                                    <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                    <td className="border px-4 py-2">{formattedExpirationDate}</td> 
+                                                </tr>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>

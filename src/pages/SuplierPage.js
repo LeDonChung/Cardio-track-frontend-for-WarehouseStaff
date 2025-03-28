@@ -102,14 +102,31 @@ export const SuplierPage = () => {
                             {/* Item List */}
                             {purchaseOrderByPendingStatus?.data?.map((purchaseOrder, index) => {
                                 // Chuyển đổi ngày giờ từ UTC sang múi giờ VN (UTC+7) và lấy chỉ phần ngày tháng năm
-                                const orderDateVN = new Date(purchaseOrder.orderDate).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+                                const orderDateVN = new Date(purchaseOrder.orderDate).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+
+                                // Xử lý hiển thị status
+                                let statusLabel = "";
+                                switch (purchaseOrder.status) {
+                                    case "PENDING":
+                                        statusLabel = "Đang xử lý";
+                                        break;
+                                    case "APPROVED":
+                                        statusLabel = "Đã chấp nhận";
+                                        break;
+                                    case "CANCELED":
+                                        statusLabel = "Đã hủy";
+                                        break;
+                                    default:
+                                        statusLabel = "Không xác định";
+                                        break;
+                                }
 
                                 return (
                                     <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
                                         <div className="flex justify-between items-center mb-2">
                                             <h3 className="font-semibold">{purchaseOrder.supplierName}</h3>
                                             <h4 className="ml-auto">{orderDateVN}</h4>
-                                            <h4 className="ml-auto">{purchaseOrder.status}</h4>
+                                            <h4 className="ml-auto">Trạng thái: {statusLabel}</h4>
                                         </div>
                                         <div className="flex justify-between items-center mb-2">
                                             <div>
