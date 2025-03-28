@@ -490,37 +490,41 @@ export const InventoryImportPage = () => {
                                 {purchaseOrderByPendingStatus.length === 0 ? (
                                     <div>Không có đơn mua lô thuốc nào.</div>
                                 ) : (
-                                    purchaseOrderByPendingStatus.map((order, index) => (
-                                        <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50 cursor-pointer hover:bg-gray-200" onClick={() => openOrderDetails(order)}>
-                                            <div className="flex justify-between mb-2">
-                                                <span className="font-semibold">Mã đơn: {order.id}</span>
-                                                <span className="text-sm text-gray-500">Ngày đặt: {order.orderDate}</span>
+                                    purchaseOrderByPendingStatus.map((order, index) => {
+                                        // Chuyển đổi ngày giờ từ UTC sang múi giờ VN (UTC+7)
+                                        const orderDateVN = new Date(order.orderDate).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+                                    
+                                        return (
+                                            <div key={index} className="border p-4 rounded-md shadow-md bg-gray-50 cursor-pointer hover:bg-gray-200" onClick={() => openOrderDetails(order)}>
+                                                <div className="flex justify-between mb-2">
+                                                    <span className="font-semibold">Mã đơn: {order.id}</span>
+                                                    <span className="text-sm text-gray-500">Ngày đặt: {orderDateVN}</span>
+                                                </div>
+                                                <div className="mb-2">
+                                                    <strong>Nhà cung cấp:</strong> {order.supplierName}
+                                                </div>
+                                                <div className="mb-2">
+                                                    <strong>Tình trạng:</strong> Đang xử lý - {order.status}
+                                                </div>
+                                    
+                                                {/* Nút nhập vào kho */}
+                                                <button
+                                                    onClick={(event) => importToWarehouse(order, event)}
+                                                    className="bg-green-500 text-white px-4 py-2 rounded-md"
+                                                >
+                                                    Xác nhận đơn mua
+                                                </button>
+                                    
+                                                {/* Nút hủy đơn */}
+                                                <button
+                                                    onClick={(event) => handleCancelOrder(order.id, event)}
+                                                    className="bg-red-500 text-white px-4 py-2 rounded-md ml-2"
+                                                >
+                                                    Hủy đơn
+                                                </button>
                                             </div>
-                                            <div className="mb-2">
-                                                <strong>Nhà cung cấp:</strong> {order.supplierName}
-                                            </div>
-                                            <div className="mb-2">
-                                                <strong>Tình trạng:</strong> Đang xử lý - {order.status}
-                                            </div>
-
-                                            {/* Nút nhập vào kho */}
-                                            <button
-                                                onClick={(event) => importToWarehouse(order, event)}
-                                                className="bg-green-500 text-white px-4 py-2 rounded-md"
-                                            >
-                                                Xác nhận đơn mua
-                                            </button>
-
-                                            {/* Nút hủy đơn */}
-                                            <button
-                                                onClick={(event) => handleCancelOrder(order.id, event)}
-                                                className="bg-red-500 text-white px-4 py-2 rounded-md ml-2"
-                                            >
-                                                Hủy đơn
-                                            </button>
-
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>

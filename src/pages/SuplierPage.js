@@ -100,38 +100,46 @@ export const SuplierPage = () => {
                         </div>
                         <div className="space-y-4">
                             {/* Item List */}
-                            {purchaseOrderByPendingStatus?.data?.map((purchaseOrder, index) => (
-                                <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
-                                    <div className="flex justify-between items-center mb-2">
+                            {purchaseOrderByPendingStatus?.data?.map((purchaseOrder, index) => {
+                                // Chuyển đổi ngày giờ từ UTC sang múi giờ VN (UTC+7) và lấy chỉ phần ngày tháng năm
+                                const orderDateVN = new Date(purchaseOrder.orderDate).toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 
-                                        <h3 className="font-semibold">{purchaseOrder.supplierName}</h3>
-                                        <h4 className="ml-auto">{purchaseOrder.orderDate}</h4>
-                                        <h4 className="ml-auto">{purchaseOrder.status}</h4>
-                                    </div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <div>
-                                            <p className="text-sm text-gray-600">{purchaseOrder.supplierAddress}</p>
-                                            <p className="text-sm text-gray-600">{purchaseOrder.supplierContactInfo}</p>
-                                            {/* <p className="text-sm text-gray-600">Tổng lượng hàng cung cấp: {purchaseOrder.supplier.totalQuantity}</p>
-                                            <p className="text-sm text-gray-600">Thuộc: {purchaseOrder.supplier.categoriesCount} danh mục thuốc</p> */}
+                                return (
+                                    <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h3 className="font-semibold">{purchaseOrder.supplierName}</h3>
+                                            <h4 className="ml-auto">{orderDateVN}</h4>
+                                            <h4 className="ml-auto">{purchaseOrder.status}</h4>
                                         </div>
-                                        <div className="flex space-x-4">
-                                            <button
-                                                onClick={() => openDetailModal(purchaseOrder)}
-                                                className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-                                            >
-                                                Xem chi tiết đơn hàng
-                                            </button>
-                                            <button
-                                                onClick={() => setIsQualityCheckOpen(true)}
-                                                className="bg-green-500 text-white py-2 px-4 rounded-lg"
-                                            >
-                                                Kiểm kê chất lượng
-                                            </button>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <div>
+                                                <p className="text-sm text-gray-600">{purchaseOrder.supplierAddress}</p>
+                                                <p className="text-sm text-gray-600">{purchaseOrder.supplierContactInfo}</p>
+                                                <p className="text-sm text-gray-600">Số thuốc mua: {purchaseOrder.purchaseOrderDetails.length}</p>
+                                                <p className="text-sm text-gray-600">
+                                                    Số lượng danh mục: {
+                                                        [...new Set(purchaseOrder.purchaseOrderDetails.map(detail => detail.category))].length
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div className="flex space-x-4">
+                                                <button
+                                                    onClick={() => openDetailModal(purchaseOrder)}
+                                                    className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                                                >
+                                                    Xem chi tiết đơn hàng
+                                                </button>
+                                                <button
+                                                    onClick={() => setIsQualityCheckOpen(true)}
+                                                    className="bg-green-500 text-white py-2 px-4 rounded-lg"
+                                                >
+                                                    Kiểm kê chất lượng
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                             {/* Các nút chuyển trang */}
                             <div className="flex justify-center space-x-4 mt-4">
@@ -187,7 +195,7 @@ export const SuplierPage = () => {
             <Footer />
 
             {/* Modals */}
-            <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys}/>
+            <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys} />
             <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} />
         </div>
     );
@@ -228,7 +236,7 @@ const OrderDetailModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, cat
                                     return (
                                         <tr key={index} className="border-b">
                                             <td className="px-4 py-2">{medicine ? medicine.name : 'Chưa có tên thuốc'}</td>
-                                            <td className="px-4 py-2">{category ? category.title: 'Chưa có tên loại'}</td>
+                                            <td className="px-4 py-2">{category ? category.title : 'Chưa có tên loại'}</td>
                                             <td className="px-4 py-2">{orderDetail.quantity}</td>
                                             <td className="px-4 py-2">{orderDetail.price}</td>
                                             <td className="px-4 py-2">{orderDetail.discount}</td>
