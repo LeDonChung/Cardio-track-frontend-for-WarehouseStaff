@@ -19,7 +19,7 @@ export const MainHome = () => {
 
     useEffect(() => {
         dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
-    }, [purchaseOrderByPendingStatus]);
+    }, [dispatch]);
 
      // Tính tổng số lượng đơn nhập có status là 'PENDING'
      const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;

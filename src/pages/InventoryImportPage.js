@@ -2,6 +2,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { verifyInventoryImport } from '../redux/slice/InventoryImportSlice';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; // Import Redux slice
 import { fetchInventoryImportsByPendingStatus } from '../redux/slice/InventoryImportSlice';
 import { createInventoryImport } from '../redux/slice/InventoryImportSlice';
@@ -20,9 +21,11 @@ import { updateInventoryImportStatus } from '../redux/slice/InventoryImportSlice
 import { createInventoryDetail } from '../redux/slice/InventoryDetailSlice';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { useNavigate } from 'react-router-dom';
 
 
 export const InventoryImportPage = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('list');
     const [search, setSearch] = useState("");
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -57,6 +60,10 @@ export const InventoryImportPage = () => {
     const { categorys } = useSelector((state) => state.categorys);
     const { shelves = [] } = useSelector((state) => state.shelf);
 
+    useEffect(() => {
+        dispatch(verifyInventoryImport(""));
+    }, [dispatch]); 
+
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
@@ -75,7 +82,7 @@ export const InventoryImportPage = () => {
 
     useEffect(() => {
         dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
-    }, [purchaseOrderByPendingStatus]);  // Log dữ liệu sau khi đã lấy xong
+    }, [dispatch]);  // Log dữ liệu sau khi đã lấy xong
 
     useEffect(() => {
         dispatch(fetchShelfs({ page: 0, size: 10000, sortBy: "notes", sortName: "asc" }));
@@ -316,7 +323,6 @@ export const InventoryImportPage = () => {
             }
         }));
     };
-
 
     if (loading) return <div>Đang tải...</div>; // Hiển thị khi đang tải dữ liệu
     if (error) return <div>Lỗi: {error.message}</div>; // Hiển thị lỗi nếu có

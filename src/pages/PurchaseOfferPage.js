@@ -10,6 +10,7 @@ import { fetchMedicinesByCategoryTitle } from '../redux/slice/MedicineSlice';
 import showToast from '../utils/AppUtils';
 import { fetchMedicineById } from '../redux/slice/MedicineSlice';
 import { createPurchaseOrder } from '../redux/slice/PurchaseOrderSlice';
+import {verifyOrder} from '../redux/slice/PurchaseOrderSlice';
 
 export const PurchaseOfferPage = () => {
     const [productName, setProductName] = useState('');
@@ -36,6 +37,10 @@ export const PurchaseOfferPage = () => {
     const { supplier, loading, error } = useSelector((state) => state.supplier);
     const { categorys } = useSelector((state) => state.categorys);
     const { medicines } = useSelector((state) => state.medicine);
+
+    useEffect(() => {
+        dispatch(verifyOrder({}));
+    }, [dispatch]);
 
     useEffect(() => {
         dispatch(fetchSuppliers({}));

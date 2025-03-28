@@ -1,6 +1,24 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { axiosInstance } from "../../api/APIClient";
 
+// verify
+export const verifySupplier = createAsyncThunk(
+    'inventosupplierryImport/verifySupplier',
+    async ({ rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/supplier/permission');
+            return response.data.data; // Trả về `data` từ trường `data` trong phản hồi API
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                // Hiển thị thông báo và chuyển hướng về trang chủ
+                alert("Bạn không có quyền truy cập trang này, hãy đăng nhập tài khoản ADMIN");
+                window.location.href = "/";
+            }
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 export const fetchSuppliers = createAsyncThunk(
     "supplier/fetchSuppliers",
     async ({ rejectWithValue }) => {

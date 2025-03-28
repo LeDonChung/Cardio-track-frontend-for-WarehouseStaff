@@ -6,6 +6,7 @@ import { fetchPurchaseOrders } from '../redux/slice/PurchaseOrderSlice';
 import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
+import {verifySupplier} from '../redux/slice/SupplierSlice';
 
 export const SuplierPage = () => {
     const [activeTab, setActiveTab] = useState('history');
@@ -23,11 +24,17 @@ export const SuplierPage = () => {
     const { medicines } = useSelector((state) => state.medicine);
     const { categorys } = useSelector((state) => state.categorys);
 
+    // xác minh
+    useEffect(() => {
+            dispatch(verifySupplier(""));
+        }, [dispatch]); 
+    
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
         dispatch(fetchPurchaseOrders({ page: currentPage, size: pageSize, sortBy: 'orderDate', sortName: 'desc' }));
     }, [dispatch, currentPage]);
+
 
 
     // Hàm chuyển sang trang tiếp theo

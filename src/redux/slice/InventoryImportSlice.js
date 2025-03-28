@@ -1,6 +1,24 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../api/APIClient'; // Import axiosInstance từ APIClient
 
+// verify import
+export const verifyInventoryImport = createAsyncThunk(
+    'inventoryImport/verifyInventoryImport',
+    async ({ rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/inventory-import/permission');
+            return response.data.data; // Trả về `data` từ trường `data` trong phản hồi API
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                // Hiển thị thông báo và chuyển hướng về trang chủ
+                alert("Bạn không có quyền truy cập trang này, hãy đăng nhập tài khoản ADMIN");
+                window.location.href = "/";
+            }
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 // Lấy danh sách đơn nhập hàng
 export const fetchInventoryImports = createAsyncThunk(
     'inventoryImport/fetchImports',

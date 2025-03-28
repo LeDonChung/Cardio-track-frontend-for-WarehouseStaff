@@ -56,14 +56,9 @@ export const Header = () => {
                 <div className="ml-auto">
                     {localStorage.getItem('token') ? (
                         <div>
-                            <a className="text-white flex justify-between items-center" href='/user'>
-                                <img
-                                    src="/icon/ic_user.png"
-                                    alt="Thera Care Logo"
-                                    className="h-10 w-10 mx-1"
-                                />
+                            <h2 className='text-white text-lg font-bold ml-2'>
                                 {user.fullName}
-                            </a>
+                            </h2>
                             <button className="text-white flex justify-between items-center" onClick={handlerActionLogout}>
                                 <img
                                     src="/icon/ic_user.png"
