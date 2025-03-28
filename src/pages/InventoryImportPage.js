@@ -60,9 +60,9 @@ export const InventoryImportPage = () => {
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
-        if(isChecked === 'all') {
+        if (isChecked === 'all') {
             dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
-        } else if(isChecked === 'pending') {
+        } else if (isChecked === 'pending') {
             dispatch(fetchInventoryImportsByPendingStatus({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
         }
     }, [dispatch, currentPage, isChecked]);
@@ -84,7 +84,8 @@ export const InventoryImportPage = () => {
 
 
     // Handle cancel order with confirmation
-    const handleCancelOrder = (orderId) => {
+    const handleCancelOrder = (orderId, event) => {
+        event.stopPropagation();
         const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn mua này?");
         if (confirmCancel) {
             const status = "CANCELED";
@@ -101,7 +102,9 @@ export const InventoryImportPage = () => {
     };
 
     // Hàm nhập kho
-    const importToWarehouse = (order) => {
+    const importToWarehouse = (order, event) => {
+        event.stopPropagation();
+
         const confirmCancel = window.confirm("Bạn có chắc chắn muốn xác nhận đơn mua này?");
         if (confirmCancel) {
             const status = "APPROVED";
@@ -171,7 +174,8 @@ export const InventoryImportPage = () => {
     };
 
     //Mở modal nhập hàng
-    const openModalImport = (order) => {
+    const openModalImport = (order, event) => {
+        event.stopPropagation();
         setSelectedOrder(order);
         dispatch(fetchInventoryImportById(order.id)); // Fetch chi tiết đơn nhập
         order.inventoryImportDetails.forEach((detail) => {
@@ -402,7 +406,7 @@ export const InventoryImportPage = () => {
                                                     <td className="border px-4 py-2 text-right">
                                                         {order.status === "PENDING" && (
                                                             <button
-                                                                onClick={() => openModalImport(order)}
+                                                                onClick={(event) => openModalImport(order, event)}
                                                                 className="bg-red-500 text-white px-4 py-2 rounded-md"
                                                             >
                                                                 Tiến hành nhập
@@ -501,7 +505,7 @@ export const InventoryImportPage = () => {
 
                                             {/* Nút nhập vào kho */}
                                             <button
-                                                onClick={() => importToWarehouse(order)}
+                                                onClick={(event) => importToWarehouse(order, event)}
                                                 className="bg-green-500 text-white px-4 py-2 rounded-md"
                                             >
                                                 Xác nhận đơn mua
@@ -509,20 +513,12 @@ export const InventoryImportPage = () => {
 
                                             {/* Nút hủy đơn */}
                                             <button
-                                                onClick={() => handleCancelOrder(order.id)}
+                                                onClick={(event) => handleCancelOrder(order.id, event)}
                                                 className="bg-red-500 text-white px-4 py-2 rounded-md ml-2"
                                             >
                                                 Hủy đơn
                                             </button>
 
-
-                                            {/* Hiển thị nút chi tiết đơn mua */}
-                                            {/* <button
-                                                onClick={() => openOrderDetails(order)}  // Open modal with order details
-                                                className="bg-yellow-500 text-white px-4 py-2 rounded-md ml-2"
-                                            >
-                                                Xem chi tiết
-                                            </button> */}
                                         </div>
                                     ))
                                 )}
@@ -638,11 +634,13 @@ export const InventoryImportPage = () => {
                                                             className="w-full h-10 max-w-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                                                         >
                                                             <option value="">Chọn kệ</option>
-                                                            {shelves.map((shelf) => (
-                                                                <option key={shelf.id} value={shelf.id}>
-                                                                    {shelf.location}
-                                                                </option>
-                                                            ))}
+                                                            {shelves
+                                                                .filter(shelf => (shelf.capacity - shelf.totalProduct) >= product.quantity) // Lọc kệ thỏa mãn điều kiện
+                                                                .map(shelf => (
+                                                                    <option key={shelf.id} value={shelf.id}>
+                                                                        {shelf.location}
+                                                                    </option>
+                                                                ))}
                                                         </select>
                                                     </td>
                                                 </tr>

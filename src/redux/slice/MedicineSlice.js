@@ -101,7 +101,6 @@ const medicineSlice = createSlice({
             state.medicines = action.payload || [];
         });
         builder.addCase(fetchMedicineById.fulfilled, (state, action) => {
-            console.log("ss",action.payload);
             state.medicines = action.payload || [];
         });
         builder.addCase(fetchMedicines.fulfilled, (state, action) => {
