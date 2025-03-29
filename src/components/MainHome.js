@@ -5,6 +5,7 @@ import inventoryImage from "../sources/images/kho-hang-slide.png";
 import { useNavigate } from 'react-router-dom';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; 
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
+import { getTotalQuantity} from '../redux/slice/InventoryDetailSlice';
 
 export const MainHome = () => {
     const navigate = useNavigate();
@@ -12,6 +13,12 @@ export const MainHome = () => {
 
     const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
     const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { totalProduct = 0 } = useSelector((state) => state.inventoryDetail || {});
+
+    // Lấy tổng số lượng thuốc từ Redux
+    useEffect(() => {
+        dispatch(getTotalQuantity());
+    }, [dispatch]);
 
     useEffect(() => {
         dispatch(fetchInventoryImports({ page: 0, size: 1000, sortBy: 'importDate', sortName: 'desc' }));
@@ -32,6 +39,12 @@ export const MainHome = () => {
         navigate('/import', { state: { activeTab: 'purchare-order' } });
     };
 
+    const handleMecineExpiration = (e) => {
+        navigate('/divide-category-medicine');
+    }
+
+    const formattedQuantity = totalProduct.toLocaleString('vi-VN');
+
     return (
         <div className="flex flex-col h-screen mb-32">
             {/* Hình ảnh kho phía trên cùng */}
@@ -48,11 +61,11 @@ export const MainHome = () => {
 
                     {/* Thông tin tổng quan */}
                     <div className="grid grid-cols-3 gap-4">
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300">
                             <h2 className="text-lg font-semibold">Tổng số lượng thuốc</h2>
-                            <p className="text-2xl text-blue-600">1,250</p>
+                            <p className="text-2xl text-blue-600">{formattedQuantity}</p>
                         </div>
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleMecineExpiration} >
                             <h2 className="text-lg font-semibold">Thuốc sắp hết hạn</h2>
                             <p className="text-2xl text-red-600">15</p>
                         </div>
@@ -67,7 +80,7 @@ export const MainHome = () => {
                             <h2 className="text-lg font-semibold">Đơn hàng chờ xử lý</h2>
                             <p className="text-2xl text-orange-600">{purchaseOrderByPendingStatus.length}</p>
                         </div>
-                        <div className="p-4 bg-white shadow rounded-lg">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300">
                             <h2 className="text-lg font-semibold">Tỷ lệ thuốc hỏng</h2>
                             <p className="text-2xl text-gray-600">2%</p>
                         </div>
