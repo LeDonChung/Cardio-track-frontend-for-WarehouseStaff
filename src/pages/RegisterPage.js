@@ -9,9 +9,9 @@ import { register, sendOtp } from "../redux/slice/UserSlice";
 export const RegisterPage = () => {
     const [userRegister, setUserRegister] = useState({
         username: '0344387030',
-        password: "abc@",
+        password: "ABC12345@",
         fullName: "Mai Chiến Nô",
-        rePassword: "abc@",
+        rePassword: "ABC12345@",
         otp: "",
     });
     const error = useSelector(state => state.user.errorResponse);

@@ -9,7 +9,7 @@ import showToast from "../utils/AppUtils";
 export const LoginPage = () => {
     const [userLogin, setUserLogin] = useState({
         username: '0344387030',
-        password: "123@"
+        password: "ABC12345@"
     });
 
     const error = useSelector(state => state.user.errorResponse);

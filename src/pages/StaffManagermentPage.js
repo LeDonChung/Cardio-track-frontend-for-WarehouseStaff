@@ -123,7 +123,11 @@ export const StaffManagermentPage = () => {
 
                                 <div className="space-y-4 w-1/2">
                                     <p><strong>Tên nhân viên:</strong> {user.fullName}</p>
-                                    <p><strong>Giới tính:</strong> {user.gender}</p>
+                                    <p><strong>Giới tính: </strong> 
+                                        {user.gender === "Female" ? "Nam" :
+                                        user.gender === "Male" ? "Nữ" :
+                                        user.gender}
+                                    </p>
                                     <p><strong>Ngày sinh:</strong> {user.dob}</p>
                                 </div>
                             </div>

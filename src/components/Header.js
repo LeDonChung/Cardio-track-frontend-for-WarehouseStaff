@@ -56,9 +56,9 @@ export const Header = () => {
                 <div className="ml-auto">
                     {localStorage.getItem('token') ? (
                         <div>
-                            <h2 className='text-white text-lg font-bold ml-2'>
+                            {/* <h2 className='text-white text-lg font-bold ml-2'>
                                 {user.fullName}
-                            </h2>
+                            </h2> */}
                             <button className="text-white flex justify-between items-center" onClick={handlerActionLogout}>
                                 <img
                                     src="/icon/ic_user.png"
