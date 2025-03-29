@@ -9,7 +9,7 @@ import showToast from "../utils/AppUtils";
 export const LoginPage = () => {
     const [userLogin, setUserLogin] = useState({
         username: '0344387030',
-        password: "Chienno123@"
+        password: "123@"
     });
 
     const error = useSelector(state => state.user.errorResponse);
@@ -29,7 +29,7 @@ export const LoginPage = () => {
             <Header />
             {/* Main Content */}
             <main className="container mx-auto mt-16">
-                <div className="max-w-md mx-auto bg-white p-8 ">
+                <div className="max-w-md mx-auto bg-white p-8 bg-gray-100 shadow-md rounded-lg">
                     <h2 className="text-center text-xl font-bold mb-4 text-custom-size">Đăng nhập với mật khẩu</h2>
                     <form id="formLogin" onSubmit={e => handlerActionLogin(e)}>
                         <div class="flex items-center border-b border-gray-300 pb-2 mb-4">
@@ -45,7 +45,7 @@ export const LoginPage = () => {
                                     type="text"
                                     id="phoneNumber"
                                     placeholder="Số điện thoại"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>
@@ -62,7 +62,7 @@ export const LoginPage = () => {
                                     type="password"
                                     id="password"
                                     placeholder="Mật khẩu"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>

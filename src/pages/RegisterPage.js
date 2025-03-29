@@ -8,10 +8,10 @@ import { register, sendOtp } from "../redux/slice/UserSlice";
 
 export const RegisterPage = () => {
     const [userRegister, setUserRegister] = useState({
-        username: '0867713557',
-        password: "ledonchung",
-        fullName: "Le Don Chung",
-        rePassword: "ledonchung",
+        username: '0344387030',
+        password: "abc@",
+        fullName: "Mai Chiến Nô",
+        rePassword: "abc@",
         otp: "",
     });
     const error = useSelector(state => state.user.errorResponse);
@@ -48,8 +48,8 @@ export const RegisterPage = () => {
         <div className="bg-white text-gray-900">
             <Header />
             {/* Main Content */}
-            <main className="container mx-auto mt-16">
-                <div className="max-w-md mx-auto bg-white p-8 ">
+            <main className="container mx-auto mt-16 mb-64">
+                <div className="max-w-md mx-auto p-8 bg-gray-100">
                     <h2 className="text-center text-xl font-bold mb-4 text-custom-size">Đăng ký</h2>
                     <form id="formRegister" onSubmit={(e) => handlerActionRegister(e)}>
                         <div class="flex items-center border-b border-gray-300 pb-2 mb-4">
@@ -65,7 +65,7 @@ export const RegisterPage = () => {
                                     type="text"
                                     id="phoneNumber"
                                     placeholder="Số điện thoại"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>
@@ -82,7 +82,7 @@ export const RegisterPage = () => {
                                     type="text"
                                     id="fullName"
                                     placeholder="Họ và tên"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>
@@ -99,7 +99,7 @@ export const RegisterPage = () => {
                                     type="password"
                                     id="password"
                                     placeholder="Mật khẩu"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>
@@ -116,7 +116,7 @@ export const RegisterPage = () => {
                                     type="password"
                                     id="rePassword"
                                     placeholder="Nhập lại mật khẩu"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                             </div>
                         </div>
@@ -134,7 +134,7 @@ export const RegisterPage = () => {
                                     id="otp"
                                     size={6}
                                     placeholder="Nhập OTP"
-                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size"
+                                    className="flex-1 w-full ml-2 py-1 focus:outline-none text-custom-size pl-2 rounded-[0.5rem]"
                                 />
                                 <button type="button" onClick={(e) => handlerActionSendOtp()}>
                                     <img
