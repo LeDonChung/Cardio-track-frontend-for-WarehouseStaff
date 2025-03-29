@@ -6,7 +6,7 @@ import { fetchPurchaseOrders } from '../redux/slice/PurchaseOrderSlice';
 import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetailSlice';
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
-import {verifySupplier} from '../redux/slice/SupplierSlice';
+import { verifySupplier } from '../redux/slice/SupplierSlice';
 
 export const SuplierPage = () => {
     const [activeTab, setActiveTab] = useState('history');
@@ -26,9 +26,9 @@ export const SuplierPage = () => {
 
     // xác minh
     useEffect(() => {
-            dispatch(verifySupplier(""));
-        }, [dispatch]); 
-    
+        dispatch(verifySupplier(""));
+    }, [dispatch]);
+
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {

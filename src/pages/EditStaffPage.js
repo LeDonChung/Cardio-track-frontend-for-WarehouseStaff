@@ -1,19 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
-export const EditStaffPage = ({param}) => {
-    // const { employee } = param();
-    const [name, setName] = useState('');
-    const [role, setRole] = useState('');
-    const [status, setStatus] = useState('');
-    const [selectedInventory, setSelectedInventory] = useState([]);
+export const EditStaffPage = () => {
+    const location = useLocation();
+    const { employee } = location.state || {};
+    const [name, setName] = useState(employee.user);
+    const [role, setRole] = useState(employee.role);
     const navigate = useNavigate();
-
-    const availableInventories = ['Kho 1', 'Kho 2', 'Kho 3', 'Kho 4'];  // Danh sách kho có sẵn
-    const roles = ['Quản lý kho', 'Nhân viên bốc xếp', 'Xử lý hàng'];
-    const statuses = ['Đang làm việc', 'Nghỉ phép', 'Thôi việc']; // Các trạng thái có sẵn
 
     const handleEditStaff = (e) => {
         e.preventDefault();  // Ngăn form tự động reload
@@ -22,32 +17,24 @@ export const EditStaffPage = ({param}) => {
         navigate('/staff');
     };
 
-    const handleInventoryChange = (e) => {
-        const selectedValue = e.target.value;
-        if (!selectedInventory.includes(selectedValue)) {
-            setSelectedInventory((prevSelected) => [...prevSelected, selectedValue]);
-        }
-    };
+    const roles = ['ADMIN - Quản lý kho', 'STAFF - Nhân viên bốc xếp', 'VIEWER - Giám sát'];
 
-    const handleRemoveInventory = (inventoryToRemove) => {
-        setSelectedInventory((prevSelected) => prevSelected.filter(inventory => inventory !== inventoryToRemove));
-    };
 
     return (
-        <div className="bg-white text-gray-900 min-h-screen">
+        <div className="bg-white text-gray-900 ">
             <Header />
-            <main className="p-8 mb-64">
+            <main className="p-8 mb-48">
                 <div className="max-w-3xl mx-auto bg-gray-50 p-6 rounded-lg shadow-md">
                     <h2 className="text-2xl font-bold mb-6">Cập nhật nhân sự</h2>
                     <form onSubmit={handleEditStaff} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium">Tên nhân viên</label>
+                            <label className="block text-sm font-medium">Nhân viên</label>
                             <input
                                 type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={employee.user}
                                 className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
+                                disabled
                             />
                         </div>
                         <div>
@@ -66,57 +53,7 @@ export const EditStaffPage = ({param}) => {
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium">Trạng thái</label>
-                            <select
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value)}
-                                className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
-                            >
-                                <option value="">Chọn trạng thái</option>
-                                {statuses.map((statusOption, index) => (
-                                    <option key={index} value={statusOption}>
-                                        {statusOption}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium">Chọn kho hàng làm việc</label>
-                            <select
-                                value=""
-                                onChange={handleInventoryChange}
-                                className="p-3 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Chọn kho</option>
-                                {availableInventories.map((inventory, index) => (
-                                    <option key={index} value={inventory}>
-                                        {inventory}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        {/* Hiển thị các kho đã chọn */}
-                        {selectedInventory.length > 0 && (
-                            <div className="mt-4">
-                                <label className="block text-sm font-medium">Kho đã chọn</label>
-                                <div className="space-y-2">
-                                    {selectedInventory.map((inventory, index) => (
-                                        <div key={index} className="flex items-center justify-between">
-                                            <span>{inventory}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveInventory(inventory)}
-                                                className="text-red-500 hover:text-red-700"
-                                            >
-                                                Xóa
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+
                         <button type="submit" className="bg-blue-500 text-white py-3 px-6 rounded-lg mt-4 w-full hover:bg-blue-600">
                             Cập nhật
                         </button>

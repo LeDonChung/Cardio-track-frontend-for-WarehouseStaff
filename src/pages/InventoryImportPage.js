@@ -99,7 +99,7 @@ export const InventoryImportPage = () => {
             dispatch(ChangeStatusPurchaseOrder({ id: orderId, status }))
                 .then(() => {
                     // Sau khi hủy thành công, tải lại danh sách đơn hàng
-                    dispatch(fetchPurchaseOrderByPendingStatus());
+                    dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
                     showToast("Đơn mua đã bị hủy.", 'success');
                 })
                 .catch(() => {
@@ -122,6 +122,7 @@ export const InventoryImportPage = () => {
                     // Sau khi duyệt đơn mua thành công, tạo đơn nhập kho
                     dispatch(createInventoryImport(order))
                         .then(() => {
+                            dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
                             dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
                             showToast("Đơn mua đã được xác nhận để chờ nhập kho.", 'success');
                         })

@@ -3,7 +3,8 @@ import { axiosInstance } from "../../api/APIClient";
 import axios from "axios";
 
 const inititalState = {
-    errorResponse: null
+    errorResponse: null,
+    user: []
 }
 
 const register = createAsyncThunk('user/register', async (request, { rejectWithValue }) => {
@@ -27,12 +28,23 @@ const login = createAsyncThunk('user/login', async (request, { rejectWithValue }
 
 const sendOtp = createAsyncThunk('user/sendOtp', async (request, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.post('/api/v1/auth/generation-otp?phoneNumber=' + request);
+        const response = await axiosInstance.post('/api/v1/user/generation-otp?phoneNumber=' + request);
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
     }
 })
+
+const getUser = createAsyncThunk('user/getUser',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get(`/api/v1/user/get-by-id/${id}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const UserSlice = createSlice({
     name: 'user',
@@ -74,10 +86,17 @@ const UserSlice = createSlice({
         builder.addCase(sendOtp.rejected, (state, action) => {
             state.errorResponse = action.payload;
         })
+
+        // getUser
+        builder.addCase(getUser.fulfilled, (state, action) => {
+            console.log("action.payload", action.payload);
+            state.user = action.payload || [];
+        });
+
     }
 })
 
 
 export const { } = UserSlice.actions;
-export { register, login, sendOtp };
+export { register, login, sendOtp, getUser };
 export default UserSlice.reducer;

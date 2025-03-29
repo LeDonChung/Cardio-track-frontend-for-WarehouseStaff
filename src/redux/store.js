@@ -12,6 +12,7 @@ import categorySlice from './slice/CategorySlice';
 import SupplierSlice from './slice/SupplierSlice';
 import CategorySlice from './slice/CategorySlice';
 import InventoryDetailSlice from './slice/InventoryDetailSlice';
+import UserInventorySlice from './slice/UserInventorySlice';
 
 
 const store = configureStore({
@@ -29,6 +30,8 @@ const store = configureStore({
         supplier: SupplierSlice,
         categorys: CategorySlice,
         inventoryDetail: InventoryDetailSlice,
+
+        userInventory: UserInventorySlice,
     },
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware({
