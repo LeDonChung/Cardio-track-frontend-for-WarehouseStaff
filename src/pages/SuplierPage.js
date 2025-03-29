@@ -89,12 +89,6 @@ export const SuplierPage = () => {
                         >
                             Lịch sử giao dịch
                         </button>
-                        <button
-                            onClick={() => setActiveTab('classification')}
-                            className={`py-2 px-4 font-medium ${activeTab === 'classification' ? 'border-b-2 border-blue-500' : 'text-gray-600'}`}
-                        >
-                            Phân loại
-                        </button>
                     </div>
                 </div>
 
@@ -180,36 +174,6 @@ export const SuplierPage = () => {
                                 >
                                     Tiếp theo <i className="fas fa-chevron-right"></i>
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'classification' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-4 space-x-4">
-                            <h2 className="text-2xl font-bold mb-4 w-1/3">Phân loại</h2>
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm nhà cung cấp..."
-                                className="mt-4 p-2 w-full border border-gray-300 rounded-lg w-1/3"
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm danh mục..."
-                                className="mt-4 p-2 w-full border border-gray-300 rounded-lg w-1/3"
-                            />
-                        </div>
-                        <div className="space-y-4">
-                            {/* Classification Content */}
-                            <div className="bg-gray-100 p-4 rounded-lg shadow">
-                                <h3 className="font-semibold mb-2">Danh mục thuốc</h3>
-                                <ul className="space-y-2">
-                                    <li>Danh mục 1: Nhà cung cấp A, Nhà cung cấp B</li>
-                                    <li>Danh mục 2: Nhà cung cấp C</li>
-                                    <li>Danh mục 3: Nhà cung cấp D, Nhà cung cấp E</li>
-                                </ul>
                             </div>
                         </div>
                     </div>
