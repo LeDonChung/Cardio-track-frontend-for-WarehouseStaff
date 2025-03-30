@@ -60,7 +60,7 @@ export const updateShelfQuantity = createAsyncThunk(
     async ({ id, quantity }, { rejectWithValue }) => {
       try {
         // Gửi yêu cầu PUT với tham số qua query string
-        const response = await axiosInstance.put(`/api/v1/shelf/updateTotalProduct`, null, {
+        const response = await axiosInstance.put(`/api/v1/shelf/update-add-total-product`, null, {
           params: {
             id, 
             quantity
