@@ -60,12 +60,12 @@ export const InventoryControlPage = () => {
         <table key={page} className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
-                <th className="border p-2">ID</th>
-                <th className="border p-2">Medicine ID</th>
-                <th className="border p-2">Vị trí</th>
-                <th className="border p-2">Giá</th>
-                <th className="border p-2">Hạn sử dụng</th>
-                <th className="border p-2">Trạng thái</th>
+                <th className="border p-2 w-[150px]">ID</th>
+                <th className="border p-2 w-[150px]">Medicine ID</th>
+                <th className="border p-2 w-[500px]">Vị trí</th>
+                <th className="border p-2 w-[500px]">Giá</th>
+                <th className="border p-2 w-[300px]">Hạn sử dụng</th>
+                <th className="border p-2 w-[300px] ">Trạng thái</th>
               </tr>
             </thead>
             <tbody>

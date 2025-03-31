@@ -3,17 +3,23 @@ import { axiosInstance } from "../../api/APIClient";
 
 export const fetchShelfs = createAsyncThunk(
   "shelf/fetchShelfs",
-  async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
+  async ({ page, size, sortBy, sortName, location }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/api/v1/shelf", {
-        params: { page, size, sortBy, sortName },
-      });
-      return response.data.data;
+      const params = { page, size, sortBy, sortName };
+      if (location) params.location = location; // Chỉ thêm nếu location có giá trị
+
+      const response = await axiosInstance.get("/api/v1/shelf", { params });
+
+      return {
+        data: response.data.data.data,
+        totalPages: response.data.data.totalPage,
+      };
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
   }
 );
+
 
 export const addShelf = createAsyncThunk(
   "shelf/addShelf",
@@ -83,6 +89,7 @@ const shelfSlice = createSlice({
     builder.addCase(fetchShelfs.fulfilled, (state, action) => {
       state.shelves = action.payload?.data || [];
       state.totalPages = action.payload?.totalPages || 1;
+      console.log("📌 totalPages trong Redux:", state.totalPages);
     });
     builder.addCase(updateShelfQuantity.fulfilled, (state, action) => {
       const index = state.shelves.findIndex((shelf) => shelf.id === action.payload.id);

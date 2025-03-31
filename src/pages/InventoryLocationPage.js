@@ -4,28 +4,25 @@ import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { fetchShelfs } from "../redux/slice/ShelfSlice";
 import { ShelfModal } from "../components/ShelfModal";
-import { searchShelf } from "../redux/slice/ShelfSlice";
 
 export const InventoryLocationPage = () => {
   const dispatch = useDispatch();
   const shelfState = useSelector((state) => state.shelf) || {};
   const { shelves = [], totalPages = 1 } = shelfState;
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [sortKey, setSortKey] = useState("id");
   const [selectedShelf, setSelectedShelf] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    if (search.trim() === "") {
-      dispatch(fetchShelfs({ page, size: 10, sortBy: "id", sortName: "asc" }));
-    } else {
-      dispatch(searchShelf({ location: search })); // Gọi API tìm kiếm
-    }
+    dispatch(fetchShelfs({ page: page - 1, size: 10, sortBy: "id", sortName: "asc", location: search || null }))
+      .then((response) => {
+        console.log("Dữ liệu lấy từ API:", response.payload);
+      });
   }, [dispatch, page, search]);
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage <= totalPages) {
+    if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
@@ -38,15 +35,6 @@ export const InventoryLocationPage = () => {
     setModalOpen(false);
     setSelectedShelf(null);
   };
-
-  const filteredLocations = shelves
-    .filter((loc) => loc.location.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      if (sortKey === "id") return a.id - b.id;
-      if (sortKey === "quantity") return a.totalProduct - b.totalProduct;
-      if (sortKey === "status") return a.status.localeCompare(b.status);
-      return 0;
-    });
 
   return (
     <div className="bg-white text-gray-900 min-h-screen">
@@ -61,14 +49,6 @@ export const InventoryLocationPage = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <select
-            className="border p-2"
-            onChange={(e) => setSortKey(e.target.value)}
-          >
-            <option value="id">Sắp xếp theo ID</option>
-            <option value="quantity">Sắp xếp theo Số lượng</option>
-            <option value="status">Sắp xếp theo Trạng thái</option>
-          </select>
           <button
             className="bg-blue-500 text-white p-2"
             onClick={() => openModal()}
@@ -88,7 +68,7 @@ export const InventoryLocationPage = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredLocations.map((loc) => (
+            {shelves.map((loc) => (
               <tr
                 key={loc.id}
                 className="border cursor-pointer"
@@ -110,21 +90,21 @@ export const InventoryLocationPage = () => {
               page <= 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
             }`}
             onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
+            disabled={page <= 1}
           >
             Trước
           </button>
           <span>
-            Trang {page + 1} / {totalPages}
+            Trang {page} / {totalPages}
           </span>
           <button
             className={`px-4 py-2 bg-gray-300 rounded mx-2 ${
-              page >= totalPages - 1
+              page >= totalPages
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer"
             }`}
             onClick={() => handlePageChange(page + 1)}
-            disabled={page >= totalPages - 1}
+            disabled={page >= totalPages}
           >
             Sau
           </button>

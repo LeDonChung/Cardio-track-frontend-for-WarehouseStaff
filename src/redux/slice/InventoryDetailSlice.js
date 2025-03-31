@@ -86,7 +86,7 @@ const inventoryDetailSlice = createSlice({
     name: 'inventoryDetail',
     initialState: {
         inventoryDetail: [],
-        totalProduct: 0,
+        totalProduct: 1,
         loading: false,
         error: null,
     },
