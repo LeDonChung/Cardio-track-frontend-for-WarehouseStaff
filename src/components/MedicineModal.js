@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { updateMedicine } from "../redux/slice/MedicineSlice";
+import { updateMedicine, fetchMedicineById } from "../redux/slice/MedicineSlice";
 
 const MedicineModal = ({ medicine, onClose }) => {
   const dispatch = useDispatch();

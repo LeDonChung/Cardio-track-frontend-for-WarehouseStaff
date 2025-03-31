@@ -1,21 +1,27 @@
 import { Header } from "../components/Header";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMedicines, deleteMedicine } from "../redux/slice/MedicineSlice";
+import { deleteMedicine, fetchMedicineById } from "../redux/slice/MedicineSlice";
+import { fetchInventoryDetail } from "../redux/slice/InventoryDetailSlice";
 import MedicineModal from "../components/MedicineModal";
 
 export const InventoryControlPage = () => {
   const dispatch = useDispatch();
-  const medicineState = useSelector((state) => state.medicine) || {};
-  const { medicines = [], totalPages = 1 } = medicineState;
+  const inventoryState = useSelector((state) => state.inventoryDetail) || {};
+  const { inventoryDetail = [], totalPages = 1 } = inventoryState;
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [selectedMedicine, setSelectedMedicine] = useState(null);
+  const [selectedInventory, setSelectedInventory] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchMedicines({ searchTerm, page, size: 10, sortBy: "name", sortName: "asc" }));
-    console.log(medicines);
+    dispatch(fetchInventoryDetail({ page: page - 1, size: 10, sortBy: "id", sortName: "asc", medicineId: searchTerm || null}))
+        .then((response) => {
+            console.log("Dữ liệu lấy từ API:", response.payload); // Kiểm tra dữ liệu từ API
+        });
   }, [dispatch, searchTerm, page]);
+  useEffect(() => {
+    console.log("Dữ liệu Redux sau khi cập nhật:", inventoryDetail);
+  }, [inventoryDetail]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -23,12 +29,15 @@ export const InventoryControlPage = () => {
     }
   };
 
-  const handleDelete = (id) => {
-    dispatch(deleteMedicine(id));
-  };
-
-  const handleRowClick = (medicine) => {
-    setSelectedMedicine(medicine);
+  const handleRowClick = (inventoryItem) => {
+    dispatch(fetchMedicineById(inventoryItem.medicine))
+      .then((response) => {
+        console.log("Chi tiết thuốc:", response.payload);
+        setSelectedInventory(response.payload); // Cập nhật modal với thông tin thuốc
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy chi tiết thuốc:", error);
+      });
   };
 
   return (
@@ -48,34 +57,28 @@ export const InventoryControlPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-gray-100">
-              <tr>
+        <table key={page} className="w-full border-collapse border border-gray-300">
+          <thead className="bg-gray-100">
+            <tr>
                 <th className="border p-2">ID</th>
-                <th className="border p-2">Tên</th>
+                <th className="border p-2">Medicine ID</th>
+                <th className="border p-2">Vị trí</th>
                 <th className="border p-2">Giá</th>
+                <th className="border p-2">Hạn sử dụng</th>
                 <th className="border p-2">Trạng thái</th>
-                <th className="border p-2">Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {medicines.map((item) => (
-                <tr key={item.id} className="text-center cursor-pointer hover:bg-gray-200"
+            {inventoryDetail.map((item) => (
+                <tr key={item.medicine} className="text-center cursor-pointer hover:bg-gray-200"
                     onClick={() => handleRowClick(item)}>
                   <td className="border p-2">{item.id}</td>
-                  <td className="border p-2">{item.name}</td>
-                  <td className="border p-2">{item.price.toFixed(2)}</td>
-                  <td className="border p-2">{item.status}</td>
+                  <td className="border p-2">{item.medicine}</td>
+                  <td className="border p-2">{item.location || "Không có dữ liệu"}</td>
+                  <td className="border p-2">{item.price.toLocaleString()} VND</td>
+                  <td className="border p-2">{new Date(item.expirationDate).toLocaleDateString()}</td>
                   <td className="border p-2">
-                    <button 
-                      className="bg-red-500 text-white px-2 py-1 rounded"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                    >
-                      Xóa
-                    </button>
+                    {item.expired ? "Hết hạn" : item.nearExpiration ? "Sắp hết hạn" : "Còn hạn"}
                   </td>
                 </tr>
               ))}
@@ -110,10 +113,10 @@ export const InventoryControlPage = () => {
         </div>
       </div>
 
-      {selectedMedicine && (
+      {selectedInventory && (
         <MedicineModal 
-          medicine={selectedMedicine} 
-          onClose={() => setSelectedMedicine(null)} 
+          medicine={selectedInventory} 
+          onClose={() => setSelectedInventory(null)} 
         />
       )}
     </div>

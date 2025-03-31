@@ -22,7 +22,7 @@ import { createInventoryDetail } from '../redux/slice/InventoryDetailSlice';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { useNavigate } from 'react-router-dom';
-import { fetchInventoryDetail } from '../redux/slice/InventoryDetailSlice';
+import { fetchInventoryDetail1 } from '../redux/slice/InventoryDetailSlice';
 
 
 export const InventoryImportPage = () => {
@@ -233,7 +233,7 @@ export const InventoryImportPage = () => {
                 }
 
                 try {
-                    const response = await dispatch(fetchInventoryDetail({
+                    const response = await dispatch(fetchInventoryDetail1({
                         medicineId: detail.medicine,
                         shelfId: matchingShelf.shelfId,
                     })).unwrap();  // ✅ Chờ API trả về dữ liệu đúng cách
