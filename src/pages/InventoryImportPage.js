@@ -22,6 +22,7 @@ import { createInventoryDetail } from '../redux/slice/InventoryDetailSlice';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { useNavigate } from 'react-router-dom';
+import { fetchInventoryDetail } from '../redux/slice/InventoryDetailSlice';
 
 
 export const InventoryImportPage = () => {
@@ -62,7 +63,7 @@ export const InventoryImportPage = () => {
 
     useEffect(() => {
         dispatch(verifyInventoryImport(""));
-    }, [dispatch]); 
+    }, [dispatch]);
 
 
     // Gửi yêu cầu API khi trang thay đổi
@@ -207,11 +208,12 @@ export const InventoryImportPage = () => {
         setShowImportModal(true);
     };
 
-    const handleSubmitImport = () => {
+    const handleSubmitImport = async () => {
         const shelfs = Object.keys(shelfForProduct).map(productId => ({
             medincineId: shelfForProduct[productId]?.thuocId,
             quantity: shelfForProduct[productId]?.quantity,
             shelfId: shelfForProduct[productId]?.shelfId,
+            location: shelfForProduct[productId]?.location,
         }));
 
         // Kiểm tra xem đã chọn đầy đủ kệ cho tất cả các sản phẩm chưa
@@ -220,52 +222,75 @@ export const InventoryImportPage = () => {
             return;
         }
 
-        const updatedInventoryDetails = inventoryImportDetail.map(detail => {
-            const medicineStr = detail.medicine.toString();
-            const matchingShelf = shelfs.find(item => item.medincineId.toString() === medicineStr);
-            if (!matchingShelf) {
-                console.error(`Không tìm thấy shelf cho sản phẩm ${detail.medicine}`);
-            }
-            return {
-                ...detail,
-                shelfId: matchingShelf?.shelfId,
-            };
-        });
+        const updatedInventoryDetails = await Promise.all(
+            inventoryImportDetail.map(async (detail) => {  // ✅ Thêm async ở đây
+                const medicineStr = detail.medicine.toString();
+                const matchingShelf = shelfs.find(item => item.medincineId.toString() === medicineStr);
+
+                if (!matchingShelf) {
+                    console.error(`Không tìm thấy shelf cho sản phẩm ${detail.medicine}`);
+                    return { ...detail, id: null }; // Trả về detail với id null nếu không tìm thấy shelf
+                }
+
+                try {
+                    const response = await dispatch(fetchInventoryDetail({
+                        medicineId: detail.medicine,
+                        shelfId: matchingShelf.shelfId,
+                    })).unwrap();  // ✅ Chờ API trả về dữ liệu đúng cách
+
+                    return {
+                        ...detail,
+                        shelfId: matchingShelf.shelfId,
+                        location: matchingShelf.location,
+                        id: response.id || null,
+                    };
+                } catch (error) {
+                    // console.error("❌ Lỗi khi gọi API:", error);
+                    return {
+                        ...detail, shelfId: matchingShelf.shelfId,
+                        location: matchingShelf.location, id: null
+                    }; // Nếu lỗi API, giữ nguyên detail và id = null
+                }
+            })
+        );
 
         const confirmCancel = window.confirm("Bạn có chắc chắn về xử lý nhập kho này?");
         if (confirmCancel) {
             const status = "IMPORTED";
 
+            // Cập nhật số lượng sản phẩm trong kệ
+            shelfs.forEach(shelf => {
+                dispatch(updateShelfQuantity({
+                    id: shelf.shelfId,
+                    quantity: shelf.quantity
+                }))
+                    .then((response) => {
+                        console.log('Cập nhật thành công:', response);
+                    })
+                    .catch((error) => {
+                        console.error('Lỗi khi cập nhật kệ:', error);
+                        showToast("Đã có lỗi xảy ra khi cập nhật kệ.", 'error');
+                    });
+            });
             // Đổi trạng thái đơn hàng thành IMPORTED
             dispatch(updateInventoryImportStatus({ id: selectedOrder.id, status }))
                 .then(() => {
                     // Tạo chi tiết nhập kho
                     dispatch(createInventoryDetail(updatedInventoryDetails))
                         .then(() => {
-                            shelfs.forEach(shelf => {
-                                dispatch(updateShelfQuantity({
-                                    id: shelf.shelfId,
-                                    quantity: shelf.quantity
-                                }))
-                                    .then((response) => {
-                                        console.log('Cập nhật thành công:', response);
-                                    })
-                                    .catch((error) => {
-                                        console.error('Lỗi khi cập nhật kệ:', error);
-                                        showToast("Đã có lỗi xảy ra khi cập nhật kệ.", 'error');
-                                    });
-                            });
+                            dispatch(fetchInventoryImports({ page: currentPage, size: pageSize, sortBy: 'importDate', sortName: 'desc' }));
                         })
                         .catch((error) => {
-                            console.error("Lỗi khi tạo chi tiết nhập kho:", error);
-                            showToast("Đã có lỗi xảy ra khi tạo chi tiết nhập kho.", 'error');
                         });
                 })
                 .catch((error) => {
                     console.error("Lỗi khi thay đổi trạng thái đơn nhập kho:", error);
                     showToast("Đã có lỗi xảy ra khi thay đổi trạng thái đơn nhập kho.", 'error');
                 });
-            window.location.reload()
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 2500);
             showToast('Nhập kho thành công', 'success');
             closeModal();
         }
@@ -320,7 +345,8 @@ export const InventoryImportPage = () => {
                 medicineId: productId,
                 thuocId: medicineId,
                 quantity: quantity,
-                shelfId: selectedShelfId
+                shelfId: selectedShelfId,
+                location: shelves.find(shelf => shelf.id.toString() === selectedShelfId)?.location
             }
         }));
     };

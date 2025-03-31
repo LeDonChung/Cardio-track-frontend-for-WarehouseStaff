@@ -8,6 +8,7 @@ export const createInventoryDetail = createAsyncThunk(
         try {
             // Duyệt qua từng item trong inventoryDetailArray và gửi từng yêu cầu một
             const inventoryDetailRequests = inventoryDetailArray.map(inventoryDetail => ({
+                id: inventoryDetail.id || null, // Nếu có id thì sử dụng, nếu không thì để null
                 inventoryId: 1,
                 medicine: inventoryDetail.medicine,
                 category: inventoryDetail.category,
@@ -47,6 +48,20 @@ export const getTotalQuantity = createAsyncThunk(
     }
 );
 
+// Lấy thông tin chi tiết kho theo medicineId và shelfId
+export const fetchInventoryDetail = createAsyncThunk(
+    'inventoryDetail/fetchInventoryDetail',
+    async ({ medicineId, shelfId }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/inventory/find-inventory-detail', {
+                params: { medicineId, shelfId }
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
 
 const inventoryDetailSlice = createSlice({
     name: 'inventoryDetail',
@@ -81,6 +96,19 @@ const inventoryDetailSlice = createSlice({
             .addCase(getTotalQuantity.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload; // Lưu thông báo lỗi
+            });
+        builder
+            .addCase(fetchInventoryDetail.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchInventoryDetail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.inventoryDetail = action.payload.data;
+            })
+            .addCase(fetchInventoryDetail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
             });
     },
 });
