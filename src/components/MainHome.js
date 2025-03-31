@@ -5,19 +5,25 @@ import inventoryImage from "../sources/images/kho-hang-slide.png";
 import { useNavigate } from 'react-router-dom';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; 
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
-import { getTotalQuantity} from '../redux/slice/InventoryDetailSlice';
+import { getTotalQuantity, fetchMedicineNearExpiration} from '../redux/slice/InventoryDetailSlice';
 
 export const MainHome = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
+    const { inventoryDetail = [], loading: inventoryLoading, error: inventoryError } = useSelector((state) => state.inventoryDetail || {});
     const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
     const { totalProduct = 0 } = useSelector((state) => state.inventoryDetail || {});
 
     // Lấy tổng số lượng thuốc từ Redux
     useEffect(() => {
         dispatch(getTotalQuantity());
+    }, [dispatch]);
+
+    // Lấy danh sách thuốc sắp hết hạn từ Redux
+    useEffect(() => {
+        dispatch(fetchMedicineNearExpiration({ page: 0, size: 1000, sortBy: 'id', sortName: 'asc' }));
     }, [dispatch]);
 
     useEffect(() => {
@@ -32,7 +38,7 @@ export const MainHome = () => {
      const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;
 
     const handleInventoryPending = (e) => {
-        navigate('/import', { state: { activeTab: 'list' } });
+        navigate('/import?filter=pending', { state: { activeTab: 'list' } });
     };
 
     const handlePurchasePending = (e) => {
@@ -40,7 +46,7 @@ export const MainHome = () => {
     };
 
     const handleMecineExpiration = (e) => {
-        navigate('/divide-category-medicine');
+        navigate('/inventory-control?filter=near-expired');
     }
 
     const formattedQuantity = totalProduct.toLocaleString('vi-VN');
@@ -67,7 +73,7 @@ export const MainHome = () => {
                         </div>
                         <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleMecineExpiration} >
                             <h2 className="text-lg font-semibold">Thuốc sắp hết hạn</h2>
-                            <p className="text-2xl text-red-600">15</p>
+                            <p className="text-2xl text-red-600">{inventoryDetail.length}</p>
                         </div>
                         <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleInventoryPending} >
                             <h2 className="text-lg font-semibold">Lô hàng chờ nhập</h2>

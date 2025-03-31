@@ -82,6 +82,36 @@ export const fetchInventoryDetail1 = createAsyncThunk(
     }
 );
 
+//Lấy danh sách thuốc gần hết hạn
+export const fetchMedicineNearExpiration = createAsyncThunk(
+    'inventoryDetail/fetchMedicineNearExpiration',
+    async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/inventory/medicines-near-expiration', {
+                params: { page, size, sortBy, sortName },
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+// Lấy danh sách thuốc đã hết hạn
+export const fetchMedicineExpired = createAsyncThunk(
+    'inventoryDetail/fetchMedicineExpired',
+    async ({ page, size, sortBy, sortName }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/inventory/medicines-expired', {
+                params: { page, size, sortBy, sortName },
+            });
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
 const inventoryDetailSlice = createSlice({
     name: 'inventoryDetail',
     initialState: {
@@ -142,6 +172,30 @@ const inventoryDetailSlice = createSlice({
             .addCase(fetchInventoryDetail.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload.data; // Lưu thông báo lỗi
+            });
+        builder
+            .addCase(fetchMedicineNearExpiration.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchMedicineNearExpiration.fulfilled, (state, action) => {
+                state.loading = false;
+                state.inventoryDetail = action.payload.data;
+            })
+            .addCase(fetchMedicineNearExpiration.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.data;
+            });
+        builder
+            .addCase(fetchMedicineExpired.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchMedicineExpired.fulfilled, (state, action) => {
+                state.loading = false;
+                state.inventoryDetail = action.payload.data;
+            })
+            .addCase(fetchMedicineExpired.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.data;
             });
     },
 });

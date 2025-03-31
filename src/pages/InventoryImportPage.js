@@ -15,7 +15,7 @@ import showToast from "../utils/AppUtils";
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
 import { fetchShelfs } from '../redux/slice/ShelfSlice';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams  } from 'react-router-dom';
 import { updateShelfQuantity } from '../redux/slice/ShelfSlice';
 import { updateInventoryImportStatus } from '../redux/slice/InventoryImportSlice';
 import { createInventoryDetail } from '../redux/slice/InventoryDetailSlice';
@@ -27,6 +27,7 @@ import { fetchInventoryDetail1 } from '../redux/slice/InventoryDetailSlice';
 
 export const InventoryImportPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState('list');
     const [search, setSearch] = useState("");
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -36,10 +37,15 @@ export const InventoryImportPage = () => {
     const [showPurchaseOrderModal, setShowPurchaseOrderModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [shelfForProduct, setShelfForProduct] = useState({});
-    const [isChecked, setIsChecked] = useState("all");
+    const initialFilter = searchParams.get("filter") || "all";
+    const [isChecked, setIsChecked] = useState(initialFilter);
 
     const dispatch = useDispatch();
     const location = useLocation();
+
+    useEffect(() => {
+        setIsChecked(initialFilter); // Cập nhật radio khi URL thay đổi
+    }, [initialFilter]);
 
     useEffect(() => {
         if (location.state && location.state.activeTab) {
@@ -290,7 +296,7 @@ export const InventoryImportPage = () => {
 
             setTimeout(() => {
                 window.location.reload();
-            }, 2500);
+            }, 1500);
             showToast('Nhập kho thành công', 'success');
             closeModal();
         }
