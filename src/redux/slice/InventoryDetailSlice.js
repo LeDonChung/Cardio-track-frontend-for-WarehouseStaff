@@ -1,6 +1,25 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { axiosInstance } from '../../api/APIClient'; // Import axiosInstance từ APIClient
 
+export const fetchInventoryDetail = createAsyncThunk(
+    'inventoryDetail/fetchInventoryDetail',
+    async ({ page, size, sortBy, sortName, medicineId }, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get('/api/v1/inventory/inventory-details-expiration', {
+                params: { page, size, sortBy, sortName, medicineId },
+            });
+            console.log("Response từ API:", response.data); // Kiểm tra phản hồi API
+
+            return {
+                data: response.data.data.data,  // Danh sách chi tiết tồn kho
+                totalPages: response.data.data.totalPage // Tổng số trang
+            };
+        } catch (error) {
+            return rejectWithValue(error.response?.data);
+        }
+    }   
+);
+
 // Tạo chi tiết kho
 export const createInventoryDetail = createAsyncThunk(
     'inventoryDetail/createInventoryDetail',
@@ -81,6 +100,20 @@ const inventoryDetailSlice = createSlice({
             .addCase(getTotalQuantity.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload; // Lưu thông báo lỗi
+            });
+
+        builder
+            .addCase(fetchInventoryDetail.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchInventoryDetail.fulfilled, (state, action) => {
+                state.loading = false;
+                state.inventoryDetail = action.payload?.data || [];
+                state.totalPages = action.payload?.totalPages || 1; // Lưu tổng số trang
+            })
+            .addCase(fetchInventoryDetail.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload.data; // Lưu thông báo lỗi
             });
     },
 });
