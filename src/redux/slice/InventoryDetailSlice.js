@@ -69,7 +69,7 @@ export const getTotalQuantity = createAsyncThunk(
 
 // Lấy thông tin chi tiết kho theo medicineId và shelfId
 export const fetchInventoryDetail1 = createAsyncThunk(
-    'inventoryDetail/fetchInventoryDetail',
+    'inventoryDetail/fetchInventoryDetail1',
     async ({ medicineId, shelfId }, { rejectWithValue }) => {
         try {
             const response = await axiosInstance.get('/api/v1/inventory/find-inventory-detail', {
