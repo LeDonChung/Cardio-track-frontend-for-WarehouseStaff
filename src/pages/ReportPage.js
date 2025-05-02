@@ -3,6 +3,9 @@ import { Footer } from '../components/Footer';
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+ChartJS.register(ChartDataLabels);
+
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -11,7 +14,7 @@ const reportLabels = {
     import: 'Đơn nhập',
     count_import: 'Số lượng thuốc nhập',
     supplier: 'Nhà cung cấp',
-    medicine_status:'Trạng thái thuốc',
+    medicine_status: 'Trạng thái thuốc',
 };
 
 export const ReportPage = () => {
@@ -61,6 +64,10 @@ export const ReportPage = () => {
                     'http://localhost:8888/api/v1/report-order/count-medicine-import-by-supplier',
                     'http://localhost:8888/api/v1/report-order/count-cancelled-by-supplier'
                 ];
+            } else if (selectedReport === 'medicine_status') {
+                urls = [
+                    'http://localhost:8888/api/v1/report-medicine-status/count-medicine-status-by-expiration-date'
+                ];
             }
 
             try {
@@ -70,7 +77,7 @@ export const ReportPage = () => {
                 if (selectedReport === 'supplier') {
                     setReportData({
                         week: data[0],
-                        month: data[1],
+                        // month: data[1],
                         year: [],
                         cancelWeek: [],
                         cancelMonth: [],
@@ -175,7 +182,34 @@ export const ReportPage = () => {
                 ]
             };
 
-        } else {
+        } else if (selectedReport === 'medicine_status') {
+            const statusData = reportData.week || [];
+
+            const labels = statusData.map(item => item[0]); // ["Còn hạn", "Gần hết hạn", "Hết hạn"]
+            const quantities = statusData.map(item => item[1]); // [88221, 2188, 69]
+
+            return {
+                labels,
+                datasets: [
+                    {
+                        label: 'Số lượng thuốc theo tình trạng',
+                        data: quantities,
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.6)',   // Còn hạn - Xanh lá đậm 
+                            'rgba(255, 206, 86, 0.6)',   // Gần hết hạn - Vàng sáng
+                            'rgba(231, 76, 60, 0.6)'     // Hết hạn - Đỏ tươi
+                        ],
+                        borderColor: [
+                            'rgba(46, 204, 113, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(231, 76, 60, 1)'
+                        ],
+                        borderWidth: 1,
+                    }
+                ]
+            };
+        }
+        else {
             return {
                 labels,
                 datasets: [
@@ -203,7 +237,14 @@ export const ReportPage = () => {
         plugins: {
             title: {
                 display: true,
-                text: `Báo cáo thống kê ${reportLabels[selectedReport] || 'dữ liệu'}${(selectedReport !== 'count_import' && selectedReport !== 'medicine_status')  ? ' & bị huỷ' : ''}`
+                text: `Báo cáo thống kê ${reportLabels[selectedReport] || 'dữ liệu'}${(selectedReport !== 'count_import' && selectedReport !== 'medicine_status') ? ' & bị huỷ' : ''}`,
+                font: {
+                    size: 18,
+                    weight: 'bold'
+                },
+                padding: {
+                    bottom: 10
+                }
             },
             tooltip: {
                 mode: 'index',
@@ -211,9 +252,23 @@ export const ReportPage = () => {
             },
             legend: {
                 position: 'top',
-            }
+            },
+            datalabels: (selectedReport === 'medicine_status')
+                ? {
+                    anchor: 'end',
+                    align: 'top',
+                    formatter: value => value,
+                    color: '#000',
+                    font: {
+                        weight: 'bold'
+                    }
+                }
+                : {
+                    display: false // <== tắt hẳn datalabels ở tab khác
+                }
         }
     };
+
 
     return (
         <div className="bg-white text-gray-900">
