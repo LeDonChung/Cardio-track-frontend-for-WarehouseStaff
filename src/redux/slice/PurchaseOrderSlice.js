@@ -100,6 +100,7 @@ const purchaseOrderSlice = createSlice({
     name: 'purchaseOrderByPendingStatus',
     initialState: {
         purchaseOrderByPendingStatus: [],
+        purchaseOrder: [],
         loading: false,
         error: null,
     },
@@ -111,7 +112,7 @@ const purchaseOrderSlice = createSlice({
             })
             .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
                 state.loading = false;
-                state.purchaseOrderByPendingStatus = action.payload;
+                state.purchaseOrder = action.payload;
             })
             .addCase(fetchPurchaseOrders.rejected, (state, action) => {
                 state.loading = false;

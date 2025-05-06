@@ -5,6 +5,7 @@ import inventoryImage from "../sources/images/kho-hang-slide.png";
 import { useNavigate } from 'react-router-dom';
 import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
+import { fetchPurchaseOrders } from '../redux/slice/PurchaseOrderSlice';
 import { getTotalQuantity, fetchMedicineNearExpiration } from '../redux/slice/InventoryDetailSlice';
 import axios from 'axios';
 
@@ -15,6 +16,7 @@ export const MainHome = () => {
     const { inventoryImport = [], loading, error } = useSelector((state) => state.inventoryImport || {});
     const { inventoryDetail = [], loading: inventoryLoading, error: inventoryError } = useSelector((state) => state.inventoryDetail || {});
     const { purchaseOrderByPendingStatus = [], loading: orderPendingLoading, error: orderPendingError } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { purchaseOrder = [], loading: orderLoading, error: orderError } = useSelector((state) => state.purchaseOrder || {});
     const { totalProduct = 0 } = useSelector((state) => state.inventoryDetail || {});
 
     // Lấy tổng số lượng thuốc từ Redux
@@ -29,6 +31,10 @@ export const MainHome = () => {
 
     useEffect(() => {
         dispatch(fetchInventoryImports({ page: 0, size: 1000, sortBy: 'importDate', sortName: 'desc' }));
+    }, [dispatch]);
+
+    useEffect(() => {
+        dispatch(fetchPurchaseOrders({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
     }, [dispatch]);
 
     useEffect(() => {
@@ -54,6 +60,19 @@ export const MainHome = () => {
 
     // Thêm state để lưu forecasted demand
     const [forecastedDemand, setForecastedDemand] = React.useState(null);
+
+    const totalReviewProduct = Array.isArray(purchaseOrder?.data)
+    ? purchaseOrder.data
+        .flatMap(order => order.purchaseOrderDetails || []) // gom tất cả các chi tiết từ nhiều đơn hàng
+        .filter(detail => detail.review && detail.review.trim() !== "").length // lọc các sản phẩm có đánh giá
+    : 0;
+
+    console.log("Tổng số lượng thuốc:", purchaseOrder);
+    console.log("Tổng số lượng thuốc hỏng:", totalReviewProduct);
+
+    const handleReviewMedicine = () => {
+        navigate('/suplier');
+    }
 
     // Gọi API Flask khi totalProduct thay đổi
     useEffect(() => {
@@ -116,9 +135,9 @@ export const MainHome = () => {
                             <h2 className="text-lg font-semibold">Đơn hàng chờ xử lý</h2>
                             <p className="text-2xl text-orange-600">{purchaseOrderByPendingStatus.length}</p>
                         </div>
-                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300">
+                        <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300" onClick={handleReviewMedicine}>
                             <h2 className="text-lg font-semibold">Tỷ lệ thuốc hỏng</h2>
-                            <p className="text-2xl text-gray-600">2%</p>
+                            <p className="text-2xl text-orange-500">{((totalReviewProduct / totalProduct) * 100).toFixed(5)}%</p>
                         </div>
                     </div>
 

@@ -7,7 +7,11 @@ import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetail
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
 import { verifySupplier } from '../redux/slice/SupplierSlice';
+import {getTotalQuantity} from '../redux/slice/InventoryDetailSlice';
 import showToast from "../utils/AppUtils";
+import * as pdfMake from "pdfmake/build/pdfmake";
+import * as pdfFonts from "pdfmake/build/vfs_fonts";
+pdfMake.vfs = pdfFonts.vfs;
 
 export const SuplierPage = () => {
     const [activeTab, setActiveTab] = useState('history');
@@ -18,24 +22,52 @@ export const SuplierPage = () => {
 
     const dispatch = useDispatch();
 
+    const [totalReviewedProducts, setTotalReviewedProducts] = useState(0); // State để lưu tổng số sản phẩm đã đánh giá
+
     // Lấy dữ liệu từ Redux store
     const { supplier, loading, error } = useSelector((state) => state.supplier);
-    const { purchaseOrderByPendingStatus } = useSelector((state) => state.purchaseOrderByPendingStatus);
+    const { purchaseOrder } = useSelector((state) => state.purchaseOrder);
     const { purchaseOrderDetail } = useSelector((state) => state.purchaseOrderDetail);
     const { medicines } = useSelector((state) => state.medicine);
     const { categorys } = useSelector((state) => state.categorys);
+    const { totalProduct = 0 } = useSelector((state) => state.inventoryDetail || {});
+
+    // Lấy tổng số lượng thuốc từ Redux
+    useEffect(() => {
+        dispatch(getTotalQuantity());
+    }, [dispatch]);
 
     // xác minh
     useEffect(() => {
         dispatch(verifySupplier(""));
     }, [dispatch]);
 
+    const [allOrders, setAllOrders] = useState([]);
+
+    useEffect(() => {
+        if (purchaseOrder?.data) {
+            setAllOrders(prev => {
+                const newOrders = purchaseOrder.data;
+                const merged = [...prev, ...newOrders];
+                const uniqueOrders = Array.from(new Map(merged.map(order => [order.id, order])).values());
+                return uniqueOrders;
+            });
+        }
+    }, [purchaseOrder]);
+
+    useEffect(() => {
+        const totalReviewed = allOrders
+            .flatMap(order => order.purchaseOrderDetails || [])
+            .filter(detail => detail.review).length;
+
+        setTotalReviewedProducts(totalReviewed);
+    }, [allOrders]);
+
 
     // Gửi yêu cầu API khi trang thay đổi
     useEffect(() => {
         dispatch(fetchPurchaseOrders({ page: currentPage, size: pageSize, sortBy: 'orderDate', sortName: 'desc' }));
     }, [dispatch, currentPage]);
-
 
 
     // Hàm chuyển sang trang tiếp theo
@@ -116,15 +148,23 @@ export const SuplierPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                {/* Tab Content */}
                 {activeTab === 'history' && (
                     <div>
                         <div className="flex">
                             <h2 className="text-2xl font-bold mb-4">Lịch sử giao dịch</h2>
+
+                            <h5 className="ml-auto text-lg font-semibold">
+                                <h5>
+                                    Tổng sản phẩm lỗi: {totalReviewedProducts} (Tỷ lệ {((totalReviewedProducts / totalProduct) * 100).toFixed(5)}%)
+                                </h5>
+
+                            </h5>
+
+
                         </div>
                         <div className="space-y-4">
                             {/* Item List */}
-                            {purchaseOrderByPendingStatus?.data?.map((purchaseOrder, index) => {
+                            {purchaseOrder?.data?.map((purchaseOrder, index) => {
                                 // Chuyển đổi ngày giờ từ UTC sang múi giờ VN (UTC+7) và lấy chỉ phần ngày tháng năm
                                 const orderDateVN = new Date(purchaseOrder.orderDate).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
 
@@ -207,7 +247,7 @@ export const SuplierPage = () => {
 
             {/* Modals */}
             <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys} />
-            <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys}/>
+            <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys} purchaseOrder={purchaseOrder} currentPage={currentPage} pageSize={pageSize} />
         </div>
     );
 }
@@ -216,7 +256,6 @@ export const SuplierPage = () => {
 const OrderDetailModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, categorys }) => {
 
     if (!isOpen) return null;
-    console.log("medicines no:", medicines);
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
@@ -267,7 +306,7 @@ const OrderDetailModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, cat
     );
 };
 
-const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, categorys }) => {
+const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, categorys, purchaseOrder, currentPage, pageSize }) => {
     const [isCategorySelected, setIsCategorySelected] = useState(true);
     const [isMedicineSelected, setIsMedicineSelected] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -275,6 +314,18 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
     const [categoryReviewType, setCategoryReviewType] = useState('');
     const [medicineReviewType, setMedicineReviewType] = useState('');
     const [filteredMedicines, setFilteredMedicines] = useState([]);
+    const dispatch = useDispatch();
+
+    const resetForm = () => {
+        setIsCategorySelected(true);
+        setIsMedicineSelected(false);
+        setSelectedCategory('');
+        setSelectedMedicine('');
+        setCategoryReviewType('');
+        setMedicineReviewType('');
+        setFilteredMedicines([]);
+    };
+
 
     const handleCategoryChange = (e) => {
         const value = e.target.value;
@@ -323,7 +374,11 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reviewData),
             });
+
             showToast("Thêm đánh giá thành công!", 'success');
+
+            dispatch(fetchPurchaseOrders({ page: currentPage, size: pageSize, sortBy: 'orderDate', sortName: 'desc' }));
+            resetForm();
             onClose();
         } catch (error) {
             console.error('Lỗi khi thêm đánh giá:', error);
@@ -336,10 +391,70 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
         .map(id => categorys.find(cat => cat.id === id))
         .filter(Boolean);
 
+    const handlePrintFile = () => {
+        const tableBody = [];
+
+        // Header
+        tableBody.push([
+            { text: "Sản phẩm", style: "tableHeader" },
+            { text: "Danh mục", style: "tableHeader" },
+            { text: "Chú thích", style: "tableHeader" }
+        ]);
+
+        purchaseOrderDetail.forEach(detail => {
+            if (detail.review) {
+                const med = medicines.find(m => m.id === detail.medicine);
+                const cat = categorys.find(c => c.id === detail.category);
+                tableBody.push([
+                    med?.name || "Không rõ",
+                    cat?.title || "Không rõ",
+                    detail.review
+                ]);
+            }
+        });
+
+        const docDefinition = {
+            content: [
+                { text: "Phiếu kiểm kê chất lượng", style: "header" },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ["*", "*", "*"],
+                        body: tableBody
+                    }
+                }
+            ],
+            styles: {
+                header: {
+                    fontSize: 18,
+                    bold: true,
+                    margin: [0, 0, 0, 10]
+                },
+                tableHeader: {
+                    bold: true,
+                    fontSize: 13,
+                    color: "white",
+                    fillColor: "#1976d2", // màu xanh header
+                    alignment: "center"
+                }
+            },
+            defaultStyle: {
+                font: "Roboto"
+            }
+        };
+
+        pdfMake.createPdf(docDefinition).download("kiem-ke-chat-luong.pdf");
+    };
+
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-8 rounded-lg w-2/3 max-w-4xl relative">
                 <h3 className="text-2xl font-bold mb-4">Kiểm kê chất lượng</h3>
+
+                <button className="mb-4 bg-green-500 text-white py-2 px-4 rounded-lg" onClick={handlePrintFile}
+                >
+                    In file
+                </button>
 
                 <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
                     {purchaseOrderDetail.map((detail, idx) => {
@@ -370,6 +485,7 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
                                     setIsMedicineSelected(false);
                                     setSelectedMedicine('');
                                     setMedicineReviewType('');
+                                    setFilteredMedicines([]);
                                 }}
                                 className="mr-2"
                             />
@@ -384,6 +500,7 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
                                     setIsCategorySelected(false);
                                     setIsMedicineSelected(true);
                                     setCategoryReviewType('');
+                                    setFilteredMedicines([]);
                                 }}
                                 className="mr-2"
                             />
@@ -476,9 +593,7 @@ const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, ca
                 </div>
 
                 <div className="flex justify-end mt-4">
-                    <button onClick={onClose} className="bg-red-500 text-white py-2 px-4 rounded-lg">
-                        Đóng
-                    </button>
+                    <button className="bg-red-500 text-white py-2 px-4 rounded-lg" onClick={() => { resetForm(); onClose(); }}>Đóng</button>
                 </div>
             </div>
         </div>

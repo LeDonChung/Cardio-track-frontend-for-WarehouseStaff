@@ -21,6 +21,7 @@ const store = configureStore({
         inventoryImport: InventoryImportSlice,
         inventoryImportDetail: InventoryImportDetailSlice,
         purchaseOrderByPendingStatus: PurchaseOrderSlice,
+        purchaseOrder: PurchaseOrderSlice,
         purchaseOrderDetail: PurchaseOrderDetailSlice,
         medicine: MedicineSlice,
         shelf: ShelfSlice,
