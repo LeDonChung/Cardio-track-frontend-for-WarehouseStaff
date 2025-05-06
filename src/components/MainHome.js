@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import inventoryImage from "../sources/images/kho-hang-slide.png";
 import { useNavigate } from 'react-router-dom';
-import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice'; 
+import { fetchInventoryImports } from '../redux/slice/InventoryImportSlice';
 import { fetchPurchaseOrderByPendingStatus } from '../redux/slice/PurchaseOrderSlice';
-import { getTotalQuantity, fetchMedicineNearExpiration} from '../redux/slice/InventoryDetailSlice';
+import { getTotalQuantity, fetchMedicineNearExpiration } from '../redux/slice/InventoryDetailSlice';
+import axios from 'axios';
 
 export const MainHome = () => {
     const navigate = useNavigate();
@@ -34,8 +35,8 @@ export const MainHome = () => {
         dispatch(fetchPurchaseOrderByPendingStatus({ page: 0, size: 1000, sortBy: 'orderDate', sortName: 'desc' }));
     }, [dispatch]);
 
-     // Tính tổng số lượng đơn nhập có status là 'PENDING'
-     const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;
+    // Tính tổng số lượng đơn nhập có status là 'PENDING'
+    const pendingInventoryCount = inventoryImport.filter(item => item.status === 'PENDING').length;
 
     const handleInventoryPending = (e) => {
         navigate('/import?filter=pending', { state: { activeTab: 'list' } });
@@ -51,6 +52,27 @@ export const MainHome = () => {
 
     const formattedQuantity = totalProduct.toLocaleString('vi-VN');
 
+    // Thêm state để lưu forecasted demand
+    const [forecastedDemand, setForecastedDemand] = React.useState(null);
+
+    // Gọi API Flask khi totalProduct thay đổi
+    useEffect(() => {
+        const fetchForecast = async () => {
+            try {
+                const response = await axios.post('http://localhost:5000/api/forecast', {
+                    current_inventory: totalProduct
+                });
+                setForecastedDemand(response.data.forecasted_demand);
+            } catch (error) {
+                console.error("Lỗi khi gọi API dự báo:", error);
+            }
+        };
+    
+        if (totalProduct > 0) {
+            fetchForecast();
+        }
+    }, [totalProduct]);
+
     return (
         <div className="flex flex-col h-screen mb-32">
             {/* Hình ảnh kho phía trên cùng */}
@@ -64,6 +86,14 @@ export const MainHome = () => {
                 {/* Main Content */}
                 <main className="flex-1 p-6 bg-gray-50">
                     <h1 className="text-2xl font-bold mb-4">Tổng quan kho thuốc</h1>
+
+                    {/* Dự báo nhu cầu tồn kho */}
+                    <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300 mb-6">
+                        <h2 className="text-lg font-semibold">Dự báo nhu cầu tồn kho</h2>
+                        <p className="text-2xl text-indigo-600">
+                            {forecastedDemand !== null ? forecastedDemand.toFixed(2) : "Đang tính..."}
+                        </p>
+                    </div>
 
                     {/* Thông tin tổng quan */}
                     <div className="grid grid-cols-3 gap-4">

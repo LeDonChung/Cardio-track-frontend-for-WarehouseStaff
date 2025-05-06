@@ -7,6 +7,7 @@ import { fetchPurchaseOrderDetailById } from '../redux/slice/PurchaseOrderDetail
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
 import { verifySupplier } from '../redux/slice/SupplierSlice';
+import showToast from "../utils/AppUtils";
 
 export const SuplierPage = () => {
     const [activeTab, setActiveTab] = useState('history');
@@ -71,7 +72,29 @@ export const SuplierPage = () => {
         setIsOrderDetailOpen(true);
     };
 
-    console.log("medicnie:", medicines);
+    // Mở modal kiểm kê chất lượng
+    const QualityCheckOpen = (purchaseOrder) => {
+        dispatch(fetchPurchaseOrderDetailById(purchaseOrder.id));
+        purchaseOrder.purchaseOrderDetails.forEach((detail) => {
+            const medicineId = detail.medicine;
+            const categoryId = detail.category;
+
+            // Kiểm tra nếu thuốc đã có trong state
+            const medicine = medicines.find(item => item.id === medicineId);
+            const category = categorys.find(item => item.id === categoryId);
+
+            if (!medicine) {
+                // Nếu thuốc chưa có trong state, gọi fetchMedicineById để tải thông tin
+                dispatch(fetchMedicineById_client(medicineId));
+            }
+
+            if (!category) {
+                // Nếu danh mục chưa có trong state, gọi fetchCategoryById để tải thông tin
+                dispatch(fetchCategoryById_client(categoryId));
+            }
+        });
+        setIsQualityCheckOpen(true);
+    };
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
@@ -148,7 +171,7 @@ export const SuplierPage = () => {
                                                     Xem chi tiết đơn hàng
                                                 </button>
                                                 <button
-                                                    onClick={() => setIsQualityCheckOpen(true)}
+                                                    onClick={() => QualityCheckOpen(purchaseOrder)}
                                                     className="bg-green-500 text-white py-2 px-4 rounded-lg"
                                                 >
                                                     Kiểm kê chất lượng
@@ -184,7 +207,7 @@ export const SuplierPage = () => {
 
             {/* Modals */}
             <OrderDetailModal isOpen={isOrderDetailOpen} onClose={() => setIsOrderDetailOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys} />
-            <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} />
+            <QualityCheckModal isOpen={isQualityCheckOpen} onClose={() => setIsQualityCheckOpen(false)} purchaseOrderDetail={purchaseOrderDetail} medicines={medicines} categorys={categorys}/>
         </div>
     );
 }
@@ -244,49 +267,98 @@ const OrderDetailModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, cat
     );
 };
 
+const QualityCheckModal = ({ isOpen, onClose, purchaseOrderDetail, medicines, categorys }) => {
+    const [isCategorySelected, setIsCategorySelected] = useState(true);
+    const [isMedicineSelected, setIsMedicineSelected] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedMedicine, setSelectedMedicine] = useState('');
+    const [categoryReviewType, setCategoryReviewType] = useState('');
+    const [medicineReviewType, setMedicineReviewType] = useState('');
+    const [filteredMedicines, setFilteredMedicines] = useState([]);
 
+    const handleCategoryChange = (e) => {
+        const value = e.target.value;
+        setSelectedCategory(value);
+        setSelectedMedicine('');
+        const medicinesInCategory = medicines.filter(med =>
+            med.categories.some(cat => cat.id.toString() === value.toString())
+        );
+        setFilteredMedicines(medicinesInCategory);
+    };
 
+    const handleSubmitReview = async () => {
+        const isReviewByCategory = isCategorySelected;
+        const reviewType = isReviewByCategory ? categoryReviewType : medicineReviewType;
 
+        // Validation
+        if (isReviewByCategory) {
+            if (!selectedCategory) {
+                showToast("Vui lòng chọn danh mục cần đánh giá!", 'error');
+                return;
+            }
+            if (!reviewType) {
+                showToast("Vui lòng chọn loại đánh giá!", 'error');
+                return;
+            }
+        } else {
+            if (!selectedCategory || !selectedMedicine) {
+                showToast("Vui lòng chọn danh mục và thuốc cần đánh giá!", 'error');
+                return;
+            }
+            if (!reviewType) {
+                showToast("Vui lòng chọn loại đánh giá!", 'error');
+                return;
+            }
+        }
 
-// Modal Kiểm kê chất lượng
-const QualityCheckModal = ({ isOpen, onClose }) => {
-    const [isCategorySelected, setIsCategorySelected] = useState(true); // Trạng thái cho checkbox
-    const [isMedicineSelected, setIsMedicineSelected] = useState(false); // Trạng thái cho checkbox
+        const reviewData = {
+            category: isCategorySelected ? selectedCategory : null,
+            medicine: isMedicineSelected ? selectedMedicine : null,
+            review: reviewType,
+        };
+
+        try {
+            await fetch(`http://localhost:8888/api/v1/purchase-order/${purchaseOrderDetail[0]?.purchaseOrderId}/review`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reviewData),
+            });
+            showToast("Thêm đánh giá thành công!", 'success');
+            onClose();
+        } catch (error) {
+            console.error('Lỗi khi thêm đánh giá:', error);
+        }
+    };
 
     if (!isOpen) return null;
+
+    const categoryOptions = Array.from(new Set(purchaseOrderDetail.map(detail => detail.category)))
+        .map(id => categorys.find(cat => cat.id === id))
+        .filter(Boolean);
 
     return (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-8 rounded-lg w-2/3 max-w-4xl relative">
                 <h3 className="text-2xl font-bold mb-4">Kiểm kê chất lượng</h3>
 
-                <button className="mb-4 bg-green-500 text-white py-2 px-4 rounded-lg">
-                    In file
-                </button>
-
                 <div className="max-h-64 overflow-y-auto space-y-2 mb-4">
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p><strong>Sản phẩm hỏng:</strong> Sản phẩm 1</p>
-                        <p><strong>Danh mục:</strong> Thuốc đau đầu</p>
-                        <p><strong>Chú thích:</strong> Hư hỏng do quá hạn sử dụng</p>
-                    </div>
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p><strong>Sản phẩm hỏng:</strong> Sản phẩm 2</p>
-                        <p><strong>Danh mục:</strong> Thuốc giảm đau</p>
-                        <p><strong>Chú thích:</strong> Bị vỡ trong quá trình vận chuyển</p>
-                    </div>
-                    <div className="bg-gray-100 p-4 rounded-lg">
-                        <p><strong>Sản phẩm hỏng:</strong> Sản phẩm 3</p>
-                        <p><strong>Danh mục:</strong> Thuốc Xương khớp</p>
-                        <p><strong>Chú thích:</strong> Bị vỡ trong quá trình vận chuyển</p>
-                    </div>
+                    {purchaseOrderDetail.map((detail, idx) => {
+                        const med = medicines.find(m => m.id === detail.medicine);
+                        const cat = categorys.find(c => c.id === detail.category);
+                        if (!detail.review) return null;
+                        return (
+                            <div key={idx} className="bg-gray-100 p-4 rounded-lg mb-4">
+                                <p><strong>Sản phẩm hỏng:</strong> {med?.name || 'Không rõ'}</p>
+                                <p><strong>Danh mục:</strong> {cat?.title || 'Không rõ'}</p>
+                                <p><strong>Chú thích:</strong> {detail.review}</p>
+                            </div>
+                        );
+                    })}
                 </div>
 
-                {/* Thêm đánh giá */}
                 <div className="mt-4">
                     <h4 className="font-semibold">Thêm đánh giá</h4>
 
-                    {/* Checkbox chọn loại đánh giá */}
                     <div className="flex space-x-4 mb-4">
                         <div className="flex items-center">
                             <input
@@ -296,6 +368,8 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
                                 onChange={() => {
                                     setIsCategorySelected(true);
                                     setIsMedicineSelected(false);
+                                    setSelectedMedicine('');
+                                    setMedicineReviewType('');
                                 }}
                                 className="mr-2"
                             />
@@ -309,6 +383,7 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
                                 onChange={() => {
                                     setIsCategorySelected(false);
                                     setIsMedicineSelected(true);
+                                    setCategoryReviewType('');
                                 }}
                                 className="mr-2"
                             />
@@ -316,66 +391,100 @@ const QualityCheckModal = ({ isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    {/* Phần chọn danh mục thuốc (hiện khi chọn đánh giá theo danh mục) */}
                     {isCategorySelected && (
                         <div className="flex space-x-4 mb-4">
-                            <div className='w-1/2'>
+                            <div className="w-1/2">
                                 <label className="block">Danh mục thuốc</label>
-                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                    <option value="category1">Danh mục 1</option>
-                                    <option value="category2">Danh mục 2</option>
+                                <select
+                                    value={selectedCategory}
+                                    onChange={handleCategoryChange}
+                                    className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {categoryOptions.map((cat, i) => (
+                                        <option key={i} value={cat.id}>{cat.title}</option>
+                                    ))}
                                 </select>
                             </div>
-                            <div className='w-1/2'>
+                            <div className="w-1/2">
                                 <label className="block">Loại</label>
-                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                    <option value="damaged">Hư hỏng</option>
-                                    <option value="expired">Hết hạn</option>
+                                <select
+                                    value={categoryReviewType}
+                                    onChange={(e) => setCategoryReviewType(e.target.value)}
+                                    className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="">Chọn loại</option>
+                                    <option value="Hư hỏng">Hư hỏng</option>
+                                    <option value="Hết hạn">Hết hạn</option>
+                                    <option value="Không đảm bảo chất lượng">Không đảm bảo chất lượng</option>
+                                    <option value="Khác">Khác</option>
                                 </select>
                             </div>
                         </div>
                     )}
 
-                    {/* Phần đánh giá cho từng sản phẩm (hiện khi chọn đánh giá theo từng thuốc) */}
                     {isMedicineSelected && (
                         <div className="flex space-x-4 mb-4">
-                            <div className='w-1/3'>
+                            <div className="w-1/3">
                                 <label className="block">Danh mục thuốc</label>
-                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                    <option value="category1">Danh mục 1</option>
-                                    <option value="category2">Danh mục 2</option>
+                                <select
+                                    value={selectedCategory}
+                                    onChange={handleCategoryChange}
+                                    className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {categoryOptions.map((cat, i) => (
+                                        <option key={i} value={cat.id}>{cat.title}</option>
+                                    ))}
                                 </select>
                             </div>
-                            <div className='w-1/3'>
+                            <div className="w-1/3">
                                 <label className="block">Thuốc</label>
-                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                    <option value="medicine1">Thuốc 1</option>
-                                    <option value="medicine2">Thuốc 2</option>
+                                <select
+                                    value={selectedMedicine}
+                                    onChange={(e) => setSelectedMedicine(e.target.value)}
+                                    className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="">Chọn thuốc</option>
+                                    {filteredMedicines.map((med, i) => (
+                                        <option key={i} value={med.id}>{med.name}</option>
+                                    ))}
                                 </select>
                             </div>
-                            <div className='w-1/3'>
+                            <div className="w-1/3">
                                 <label className="block">Loại</label>
-                                <select className="w-full p-2 mt-2 border border-gray-300 rounded-lg">
-                                    <option value="damaged">Hư hỏng</option>
-                                    <option value="expired">Hết hạn</option>
+                                <select
+                                    value={medicineReviewType}
+                                    onChange={(e) => setMedicineReviewType(e.target.value)}
+                                    className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="">Chọn loại</option>
+                                    <option value="Hư hỏng">Hư hỏng</option>
+                                    <option value="Hết hạn">Hết hạn</option>
+                                    <option value="Không đảm bảo chất lượng">Không đảm bảo chất lượng</option>
+                                    <option value="Khác">Khác</option>
                                 </select>
                             </div>
                         </div>
                     )}
 
-                    {/* Nút thêm đánh giá */}
                     <div className="flex space-x-4">
-                        <button className="bg-blue-500 text-white py-2 px-4 rounded-lg">Thêm đánh giá kiểm tra</button>
+                        <button className="bg-blue-500 text-white py-2 px-4 rounded-lg" onClick={handleSubmitReview}>
+                            Thêm đánh giá kiểm tra
+                        </button>
                     </div>
                 </div>
 
-                {/* Nút đóng modal */}
                 <div className="flex justify-end mt-4">
-                    <button onClick={onClose} className="bg-red-500 text-white py-2 px-4 rounded-lg">Đóng</button>
+                    <button onClick={onClose} className="bg-red-500 text-white py-2 px-4 rounded-lg">
+                        Đóng
+                    </button>
                 </div>
             </div>
         </div>
     );
 };
+
+export default QualityCheckModal;
 
 
