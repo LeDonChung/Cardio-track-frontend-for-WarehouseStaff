@@ -62,35 +62,48 @@ export const MainHome = () => {
     const [forecastedDemand, setForecastedDemand] = React.useState(null);
 
     const totalReviewProduct = Array.isArray(purchaseOrder?.data)
-    ? purchaseOrder.data
-        .flatMap(order => order.purchaseOrderDetails || []) // gom tất cả các chi tiết từ nhiều đơn hàng
-        .filter(detail => detail.review && detail.review.trim() !== "").length // lọc các sản phẩm có đánh giá
-    : 0;
-
-    console.log("Tổng số lượng thuốc:", purchaseOrder);
-    console.log("Tổng số lượng thuốc hỏng:", totalReviewProduct);
+        ? purchaseOrder.data
+            .flatMap(order => order.purchaseOrderDetails || []) // gom tất cả các chi tiết từ nhiều đơn hàng
+            .filter(detail => detail.review && detail.review.trim() !== "").length // lọc các sản phẩm có đánh giá
+        : 0;
 
     const handleReviewMedicine = () => {
         navigate('/suplier');
     }
 
-    // Gọi API Flask khi totalProduct thay đổi
+    // Gọi API Forecast từ BE Java
     useEffect(() => {
         const fetchForecast = async () => {
             try {
-                const response = await axios.post('http://localhost:5000/api/forecast', {
-                    current_inventory: totalProduct
-                });
-                setForecastedDemand(response.data.forecasted_demand);
+                const response = await axios.get('http://localhost:8888/api/v1/inventory/forecast/demand');
+
+                console.log("Response từ API:", response.data); // Log kết quả trả về
+
+                // Giả sử response.data chứa một chuỗi văn bản như sau:
+                // "Forecasted demand for the next month: 90129.0"
+                const forecastString = response.data.data;
+
+                // Sử dụng regex để trích xuất số dự báo từ chuỗi
+                const match = forecastString.match(/Forecasted demand for the next month: (\d+(\.\d+)?)/);
+
+                if (match && match[1]) {
+                    const forecastedDemand = parseFloat(match[1]); // Chuyển chuỗi thành số
+                    setForecastedDemand(forecastedDemand); // Lưu kết quả vào state
+                } else {
+                    console.warn("Không thể trích xuất dữ liệu dự báo.");
+                }
             } catch (error) {
                 console.error("Lỗi khi gọi API dự báo:", error);
+                // In thêm thông tin về lỗi
+                if (error.response) {
+                    console.error("Response từ API có lỗi:", error.response.data);
+                }
             }
         };
-    
-        if (totalProduct > 0) {
-            fetchForecast();
-        }
-    }, [totalProduct]);
+
+        fetchForecast(); // Gọi API khi component được render
+    }, []);
+
 
     return (
         <div className="flex flex-col h-screen mb-32">
@@ -108,7 +121,7 @@ export const MainHome = () => {
 
                     {/* Dự báo nhu cầu tồn kho */}
                     <div className="p-4 bg-white shadow rounded-lg cursor-pointer hover:bg-gray-300 mb-6">
-                        <h2 className="text-lg font-semibold">Dự báo nhu cầu tồn kho</h2>
+                        <h2 className="text-lg font-semibold">Dự báo lượng hàng cần nhập trong tháng tới</h2>
                         <p className="text-2xl text-indigo-600">
                             {forecastedDemand !== null ? forecastedDemand.toFixed(2) : "Đang tính..."}
                         </p>

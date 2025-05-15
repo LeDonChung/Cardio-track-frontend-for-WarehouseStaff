@@ -31,6 +31,20 @@ export const fetchUsers = createAsyncThunk(
     }
 );
 
+export const updateUser = createAsyncThunk(
+    "user/updateUser",
+    async ({ id, role }, { rejectWithValue }) => {
+        try {
+            // Gửi role qua query string, body không cần
+            const response = await axiosInstance.put(`/api/v1/user-inventory/update/${id}?role=${role}`);
+            return response.data.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+);
+
+
 const UserInventorySlice = createSlice({
     name: 'userInventory',
     initialState: {

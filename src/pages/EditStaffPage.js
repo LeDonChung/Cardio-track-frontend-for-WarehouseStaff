@@ -1,21 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation  } from 'react-router-dom';
+import { updateUser } from '../redux/slice/UserInventorySlice';
+import { useDispatch } from 'react-redux';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import showToast from "../utils/AppUtils";
 
 export const EditStaffPage = () => {
     const location = useLocation();
     const { employee } = location.state || {};
     const [name, setName] = useState(employee.user);
     const [role, setRole] = useState(employee.role);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const handleEditStaff = (e) => {
-        e.preventDefault();  // Ngăn form tự động reload
-        // Handle adding new staff here
-        // Sau khi thêm, chuyển hướng về trang StaffManagementPage
-        navigate('/staff');
+    // Xử lý sự kiện cập nhật nhân viên
+    const handleEditStaff = async (e) => {
+        e.preventDefault();
+    
+        // Cắt chuỗi role để chỉ lấy phần đầu tiên (vai trò chính)
+        const roleValue = role.split(" - ")[0];  // Lấy phần trước dấu " -"
+    
+        try {
+            // Gọi action Redux để cập nhật thông tin nhân viên với role đã được cắt
+            await dispatch(updateUser({ id: employee.user, role: roleValue }));
+            navigate('/staff');
+            showToast('Cập nhật thành công', 'success'); // Hiển thị thông báo thành công
+
+        } catch (error) {
+            console.error('Cập nhật không thành công:', error);
+        }
     };
+    
+    
+    
 
     const roles = ['ADMIN - Quản lý kho', 'STAFF - Nhân viên bốc xếp', 'VIEWER - Giám sát'];
 
