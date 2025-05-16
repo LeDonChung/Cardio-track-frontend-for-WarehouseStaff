@@ -75,7 +75,7 @@ export const MainHome = () => {
     useEffect(() => {
         const fetchForecast = async () => {
             try {
-                const response = await axios.get('http://localhost:8888/api/v1/inventory/forecast/demand');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/inventory/forecast/demand`);
 
                 console.log("Response từ API:", response.data); // Log kết quả trả về
 
