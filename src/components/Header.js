@@ -88,7 +88,7 @@ export const Header = () => {
                     className="text-white p-2 hover:bg-blue-700 rounded"
                     onClick={() => navigate('/')}
                 >
-                    Home
+                    Trang chủ
                 </button>
 
 

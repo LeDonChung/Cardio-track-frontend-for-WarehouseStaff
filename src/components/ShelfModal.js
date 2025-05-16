@@ -114,8 +114,8 @@ export const ShelfModal = ({ isOpen, onClose, shelf }) => {
           value={formData.status}
           onChange={handleChange}
         >
-          <option value="EMPTY">EMPTY</option>
-          <option value="FULL">FULL</option>
+          <option value="EMPTY">Còn trống</option>
+          <option value="FULL">Đã đầy</option>
         </select>
 
         <label className="block text-sm font-medium text-gray-700">

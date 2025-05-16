@@ -106,7 +106,7 @@ export const MainHome = () => {
 
 
     return (
-        <div className="flex flex-col h-screen mb-32">
+        <div className="flex flex-col h-screen mb-64">
             {/* Hình ảnh kho phía trên cùng */}
             <div className="bg-cover bg-center h-48" style={{ backgroundImage: `url(${inventoryImage})` }}>
                 <div className="h-full bg-black bg-opacity-50 flex items-center justify-center">

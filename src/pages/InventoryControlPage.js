@@ -104,12 +104,12 @@ export const InventoryControlPage = () => {
                     <table key={page} className="w-full border-collapse border border-gray-300">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="border p-2 w-[150px]">ID</th>
-                                <th className="border p-2 w-[150px]">Medicine ID</th>
-                                <th className="border p-2 w-[500px]">Vị trí</th>
-                                <th className="border p-2 w-[500px]">Giá</th>
-                                <th className="border p-2 w-[300px]">Hạn sử dụng</th>
-                                <th className="border p-2 w-[300px] ">Trạng thái</th>
+                                <th className="border p-2 w-[150px] text-left">STT</th>
+                                <th className="border p-2 w-[150px] text-left">Mã thuốc</th>
+                                <th className="border p-2 w-[300px] text-left">Vị trí</th>
+                                <th className="border p-2 w-[300px] text-right">Giá</th>
+                                <th className="border p-2 w-[300px] text-left">Hạn sử dụng</th>
+                                <th className="border p-2 w-[300px] text-left">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,13 +119,13 @@ export const InventoryControlPage = () => {
                                     
                                     onClick={() => handleRowClick(item)
                                 }>
-                                    <td className="border p-2">{item.id}</td>
-                                    <td className="border p-2">{item.medicine}</td>
-                                    <td className="border p-2">{item.location || "Không có dữ liệu"}</td>
-                                    <td className="border p-2">{item.price.toLocaleString()} VND</td>
-                                    <td className="border p-2">{new Date(item.expirationDate).toLocaleDateString()}</td>
+                                    <td className="border p-2 text-left">{item.id}</td>
+                                    <td className="border p-2 text-left">{item.medicine}</td>
+                                    <td className="border p-2 text-left">{item.location || "Không có dữ liệu"}</td>
+                                    <td className="border p-2 text-right">{item.price.toLocaleString()} VND</td>
+                                    <td className="border p-2 text-left">{new Date(item.expirationDate).toLocaleDateString()}</td>
                                     <td 
-                                        className={`border p-2 
+                                        className={`border p-2 text-left
                                         ${item.expired ? "bg-red-500 text-white" : 
                                         item.nearExpiration ? "bg-yellow-400 text-black" : 
                                         "text-black"}`

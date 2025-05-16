@@ -64,7 +64,8 @@ export const StaffManagermentPage = () => {
                     <table className="w-full table-auto border-collapse">
                         <thead className="bg-gray-200">
                             <tr>
-                                <th className="px-4 py-2 text-left">Nhân viên</th>
+                                <th className="px-4 py-2 text-left">Mã nhân viên</th>
+                                <th className="px-4 py-2 text-left">Tên nhân viên</th>
                                 <th className="px-4 py-2 text-left">Vai trò</th>
                                 <th className="px-4 py-2 text-left">Thông tin chi tiết</th>
                                 <th className="px-4 py-2 text-left">Thao tác</th>
@@ -77,6 +78,7 @@ export const StaffManagermentPage = () => {
                             ).map(employee => (
                                 <tr key={employee.id} className="border-b">
                                     <td className="px-4 py-2">{employee.user}</td>
+                                    <td className="px-4 py-2">{employee.name}</td>
                                     <td className="px-4 py-2">
                                         {employee.role === "ADMIN" ? "Quản lý kho" :
                                             employee.role === "STAFF" ? "Nhân viên bốc xếp" :

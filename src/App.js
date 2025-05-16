@@ -16,8 +16,13 @@ import { StaffManagermentPage } from './pages/StaffManagermentPage';
 import { InventoryControlPage } from './pages/InventoryControlPage';
 import {AddStaffPage} from './pages/AddStaffPage';
 import {EditStaffPage} from './pages/EditStaffPage';
+import React, { useEffect } from 'react';
 
 function App() {
+    useEffect(() => {
+    document.title = "Kho thuốc - Cadio Track";
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

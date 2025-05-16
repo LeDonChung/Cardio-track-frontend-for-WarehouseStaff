@@ -15,7 +15,7 @@ import showToast from "../utils/AppUtils";
 import { fetchMedicineById_client } from '../redux/slice/MedicineSlice';
 import { fetchCategoryById_client } from '../redux/slice/CategorySlice';
 import { fetchShelfs } from '../redux/slice/ShelfSlice';
-import { useLocation, useSearchParams  } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { updateShelfQuantity } from '../redux/slice/ShelfSlice';
 import { updateInventoryImportStatus } from '../redux/slice/InventoryImportSlice';
 import { createInventoryDetail } from '../redux/slice/InventoryDetailSlice';
@@ -543,8 +543,8 @@ export const InventoryImportPage = () => {
                                         <tr className="bg-gray-100">
                                             <th className="border px-4 py-2 text-left">Mã kệ</th>
                                             <th className="border px-4 py-2 text-left">Vị trí</th>
-                                            <th className="border px-4 py-2 text-left">Số lượng sản phẩm</th>
-                                            <th className="border px-4 py-2 text-left">Sức chứa</th>
+                                            <th className="border px-4 py-2 text-right">Số lượng sản phẩm</th>
+                                            <th className="border px-4 py-2 text-right">Sức chứa</th>
                                             <th className="border px-4 py-2 text-left">Trạng thái</th>
                                             <th className="border px-4 py-2 text-right">Cập nhật</th>
                                         </tr>
@@ -554,9 +554,11 @@ export const InventoryImportPage = () => {
                                             <tr key={shelf.shelf_id}>
                                                 <td className="border px-4 py-2">{shelf.id}</td>
                                                 <td className="border px-4 py-2">{shelf.location}</td>
-                                                <td className="border px-4 py-2">{shelf.totalProduct}</td>
-                                                <td className="border px-4 py-2">{shelf.capacity}</td>
-                                                <td className="border px-4 py-2">{shelf.status}</td>
+                                                <td className="border px-4 py-2 text-right">{shelf.totalProduct}</td>
+                                                <td className="border px-4 py-2 text-right">{shelf.capacity}</td>
+                                                <td className="border px-4 py-2">
+                                                    {shelf.status === 'FULL' ? 'Đã đầy' : shelf.status === 'EMPTY' ? 'Còn trống' : ''}
+                                                </td>
                                                 <td className={`border px-4 py-2 text-right ${shelf.notes.includes('+') ? 'text-green-500 font-bold' : ''}`}>{shelf.notes}</td>
                                             </tr>
                                         ))}
@@ -590,7 +592,7 @@ export const InventoryImportPage = () => {
                                                     <strong>Nhà cung cấp:</strong> {order.supplierName}
                                                 </div>
                                                 <div className="mb-2">
-                                                    <strong>Tình trạng:</strong> Đang xử lý - {order.status}
+                                                    <strong>Tình trạng:</strong> Đang xử lý
                                                 </div>
 
                                                 {/* Nút nhập vào kho */}
@@ -782,9 +784,9 @@ export const InventoryImportPage = () => {
                                 <thead>
                                     <tr className="bg-gray-100">
                                         <th className="border px-4 py-2 text-left">Mã thuốc</th>
-                                        <th className="border px-4 py-2 text-left">Số lượng</th>
-                                        <th className="border px-4 py-2 text-left">Giá</th>
-                                        <th className="border px-4 py-2 text-left">Giảm giá</th>
+                                        <th className="border px-4 py-2 text-right">Số lượng</th>
+                                        <th className="border px-4 py-2 text-right">Giá</th>
+                                        <th className="border px-4 py-2 text-right">Giảm giá</th>
                                         <th className="border px-4 py-2 text-left">Hạn sử dụng</th>
                                     </tr>
                                 </thead>
@@ -802,9 +804,9 @@ export const InventoryImportPage = () => {
                                             return (
                                                 <tr key={product.id}>
                                                     <td className="border px-4 py-2">{product.medicine}</td>
-                                                    <td className="border px-4 py-2">{product.quantity}</td>
-                                                    <td className="border px-4 py-2">{product.price.toLocaleString()} VND</td>
-                                                    <td className="border px-4 py-2">{product.discount.toLocaleString()} VND</td>
+                                                    <td className="border px-4 py-2 text-right">{product.quantity}</td>
+                                                    <td className="border px-4 py-2 text-right">{product.price.toLocaleString()} VND</td>
+                                                    <td className="border px-4 py-2 text-right">{product.discount.toLocaleString()} VND</td>
                                                     <td className="border px-4 py-2">{formattedExpirationDate}</td>
                                                 </tr>
                                             );

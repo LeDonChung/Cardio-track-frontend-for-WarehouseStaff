@@ -189,7 +189,7 @@ export const SuplierPage = () => {
                                     <div key={index} className="bg-gray-100 p-4 rounded-lg shadow">
                                         <div className="flex justify-between items-center mb-2">
                                             <h3 className="font-semibold">{purchaseOrder.supplierName}</h3>
-                                            <h4 className="ml-auto">{orderDateVN}</h4>
+                                            <h4 className="" style={{position: 'absolute', left:'700px'}}>{orderDateVN}</h4>
                                             <h4 className="ml-auto">Trạng thái: {statusLabel}</h4>
                                         </div>
                                         <div className="flex justify-between items-center mb-2">
