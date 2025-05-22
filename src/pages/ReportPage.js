@@ -31,42 +31,44 @@ export const ReportPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState('week');
     const [sortBy, setSortBy] = useState(false);
 
+    const API_BASE = `${process.env.REACT_APP_API_URL}`;
+
     useEffect(() => {
         const fetchData = async () => {
             let urls = [];
 
             if (selectedReport === 'order_purchase') {
                 urls = [
-                    'http://localhost:8888/api/v1/report-order/count-week',
-                    'http://localhost:8888/api/v1/report-order/count-month',
-                    'http://localhost:8888/api/v1/report-order/count-year',
-                    'http://localhost:8888/api/v1/report-order/count-cancelled-week',
-                    'http://localhost:8888/api/v1/report-order/count-cancelled-month',
-                    'http://localhost:8888/api/v1/report-order/count-cancelled-year'
+                    `${API_BASE}/api/v1/report-order/count-week`,
+                    `${API_BASE}/api/v1/report-order/count-month`,
+                    `${API_BASE}/api/v1/report-order/count-year`,
+                    `${API_BASE}/api/v1/report-order/count-cancelled-week`,
+                    `${API_BASE}/api/v1/report-order/count-cancelled-month`,
+                    `${API_BASE}/api/v1/report-order/count-cancelled-year`
                 ];
             } else if (selectedReport === 'import') {
                 urls = [
-                    'http://localhost:8888/api/v1/report-import/count-week',
-                    'http://localhost:8888/api/v1/report-import/count-month',
-                    'http://localhost:8888/api/v1/report-import/count-year',
-                    'http://localhost:8888/api/v1/report-import/count-cancelled-week',
-                    'http://localhost:8888/api/v1/report-import/count-cancelled-month',
-                    'http://localhost:8888/api/v1/report-import/count-cancelled-year'
+                    `${API_BASE}/api/v1/report-import/count-week`,
+                    `${API_BASE}/api/v1/report-import/count-month`,
+                    `${API_BASE}/api/v1/report-import/count-year`,
+                    `${API_BASE}/api/v1/report-import/count-cancelled-week`,
+                    `${API_BASE}/api/v1/report-import/count-cancelled-month`,
+                    `${API_BASE}/api/v1/report-import/count-cancelled-year`
                 ];
             } else if (selectedReport === 'count_import') {
                 urls = [
-                    'http://localhost:8888/api/v1/report-medicine-import/count-week',
-                    'http://localhost:8888/api/v1/report-medicine-import/count-month',
-                    'http://localhost:8888/api/v1/report-medicine-import/count-year'
+                    `${API_BASE}/api/v1/report-medicine-import/count-week`,
+                    `${API_BASE}/api/v1/report-medicine-import/count-month`,
+                    `${API_BASE}/api/v1/report-medicine-import/count-year`
                 ];
             } else if (selectedReport === 'supplier') {
                 urls = [
-                    'http://localhost:8888/api/v1/report-order/count-medicine-import-by-supplier',
-                    'http://localhost:8888/api/v1/report-order/count-cancelled-by-supplier'
+                    `${API_BASE}/api/v1/report-order/count-medicine-import-by-supplier`,
+                    `${API_BASE}/api/v1/report-order/count-cancelled-by-supplier`
                 ];
             } else if (selectedReport === 'medicine_status') {
                 urls = [
-                    'http://localhost:8888/api/v1/report-medicine-status/count-medicine-status-by-expiration-date'
+                    `${API_BASE}/api/v1/report-medicine-status/count-medicine-status-by-expiration-date`
                 ];
             }
 
