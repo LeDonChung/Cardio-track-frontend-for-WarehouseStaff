@@ -29,7 +29,7 @@ export const Header = () => {
             <div className="flex justify-between items-center">
                 <div className="flex items-center ml-0">
                     <img
-                            src="/logo/logo_90_90 1.png"
+                            src="/logo/logo.png"
                             alt="Thera Care Logo"
                             className="h-8 w-8"
                     />
